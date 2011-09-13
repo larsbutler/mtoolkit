@@ -1,3 +1,5 @@
+# GENERAL
+
 This is a prototype version of the Modeller's Tookit, which will be operated 
 from the command line with the modelling settings defined using a configuration
 file. The toolkit will firstly take input data including source geometry,
@@ -6,3 +8,7 @@ pre-processing steps (e.g. declusting, completeness analysis of catalogue,
 geometrical definitions of fault etc.) and modelling steps to define completely
 the parameters needed to define a PSHA source.
 The toolkit will then output the complete PSHA source model in the nrml format.
+
+# REQUIREMENTS
+
+1) Nose
