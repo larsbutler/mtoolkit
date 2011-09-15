@@ -38,9 +38,9 @@ class CsvParserTestCase(unittest.TestCase):
     """
 
     def setUp(self):
-        self.csv_parser = CsvParser()
         self.incorrect_filename = 'data/example.csv'
         self.correct_filename = get_data_path('ISC_small_data.csv')
+        self.csv_parser = CsvParser(self.correct_filename)
         self.fieldnames = ['eventID', 'Agency', 'Identifier',
                             'year', 'month', 'day',
                             'hour', 'minute', 'second',
@@ -52,12 +52,35 @@ class CsvParserTestCase(unittest.TestCase):
                             'sigmaML']
 
     def test_an_incorrect_csv_filename_raise_exception(self):
-        self.failUnlessRaises(IOError, self.csv_parser.parse,
-                                    self.incorrect_filename)
-
-    def test_a_correct_csv_filename_raise_no_exception(self):
-        self.csv_parser.parse(self.correct_filename)
+        self.assertRaises(IOError, CsvParser, self.incorrect_filename)
 
     def test_get_csv_fieldnames(self):
-        self.csv_parser.parse(self.correct_filename)
         self.assertEqual(self.fieldnames, self.csv_parser.fieldnames)
+
+    def test_number_data_rows_equals_number_genereted_dict(self):
+        number_data_rows = -1  # First line with fieldnames
+        with open(self.correct_filename) as csv_file:
+            for line in csv_file:
+                number_data_rows = number_data_rows + 1
+        number_generated_dict = 0
+        for data_dict in self.csv_parser.parse():
+            number_generated_dict = number_generated_dict + 1
+        self.assertEqual(number_data_rows, number_generated_dict)
+
+    def test_parse_line(self):
+        with open(self.correct_filename) as csvfile:
+            csvfile.readline()  # Skip first line with fieldnames
+            first_data_row = csvfile.readline().strip('\r\n').split(',')
+            second_data_row = csvfile.readline().strip('\r\n').split(',')
+            third_data_row = csvfile.readline().strip('\r\n').split(',')
+
+        first_dict = dict(zip(self.fieldnames, first_data_row))
+        second_dict = dict(zip(self.fieldnames, second_data_row))
+        third_dict = dict(zip(self.fieldnames, third_data_row))
+        gen_dict = self.csv_parser.parse()
+        parsed_first_dict = gen_dict.next()
+        parsed_second_dict = gen_dict.next()
+        parsed_third_dict = gen_dict.next()
+        self.assertEqual(first_dict, parsed_first_dict)
+        self.assertEqual(second_dict, parsed_second_dict)
+        self.assertEqual(third_dict, parsed_third_dict)

@@ -29,21 +29,24 @@ class CsvParser(object):
     an iterative way
     """
 
-    def __init__(self):
-        self.filename = None
-        self.fieldnames = []
-
-    def parse(self, filename):
-        """ Parse the csv file specified by its filename """
-        self.filename = filename
+    def __init__(self, filename):
         file_exists = os.path.exists(filename)
         if not file_exists:
             raise IOError('File not found')
-        self.fieldnames = self._get_fieldnames()
+        self.filename = filename
 
-    def _get_fieldnames(self):
+    def parse(self):
+        """ Parse the csv file specified by its filename """
+        with open(self.filename, 'rb') as csv_file:
+            reader = csv.reader(csv_file)
+            reader.next()  # Skip the first line containing fieldnames
+            for line in reader:
+                line_dict = dict(zip(self.fieldnames, line))
+                yield line_dict
+
+    @property
+    def fieldnames(self):
         """ Get the fieldnames inside the csv file """
         with open(self.filename, 'rb') as csv_file:
-            reader = csv.DictReader(csv_file)
-            self.fieldnames = reader.fieldnames
-        return self.fieldnames
+            reader = csv.DictReader(csv_file).fieldnames
+        return reader
