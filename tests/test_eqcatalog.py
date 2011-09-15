@@ -38,6 +38,7 @@ class CsvParserTestCase(unittest.TestCase):
     """
 
     def setUp(self):
+        """ Test Fixture """
         self.incorrect_filename = 'data/example.csv'
         self.correct_filename = get_data_path('ISC_small_data.csv')
         self.csv_parser = CsvParser(self.correct_filename)
@@ -50,11 +51,24 @@ class CsvParserTestCase(unittest.TestCase):
                             'sigmaMw', 'Ms', 'sigmaMs',
                             'mb', 'sigmamb', 'ML',
                             'sigmaML']
+        with open(self.correct_filename) as csvfile:
+            csvfile.readline()  # Skip first line with fieldnames
+            first_data_row = csvfile.readline().strip('\r\n').split(',')
+            second_data_row = csvfile.readline().strip('\r\n').split(',')
+            third_data_row = csvfile.readline().strip('\r\n').split(',')
+        self.first_dict = dict(zip(self.fieldnames, first_data_row))
+        self.second_dict = dict(zip(self.fieldnames, second_data_row))
+        self.third_dict = dict(zip(self.fieldnames, third_data_row))
 
     def test_an_incorrect_csv_filename_raise_exception(self):
+        """
+        CsvParser object raises an exception if a bad
+        filename is provided to the contructor
+        """
         self.assertRaises(IOError, CsvParser, self.incorrect_filename)
 
     def test_get_csv_fieldnames(self):
+        """ Test if csv fieldnames extracted by the parser are correct """
         self.assertEqual(self.fieldnames, self.csv_parser.fieldnames)
 
     def test_number_data_rows_equals_number_genereted_dict(self):
@@ -68,19 +82,14 @@ class CsvParserTestCase(unittest.TestCase):
         self.assertEqual(number_data_rows, number_generated_dict)
 
     def test_parse_line(self):
-        with open(self.correct_filename) as csvfile:
-            csvfile.readline()  # Skip first line with fieldnames
-            first_data_row = csvfile.readline().strip('\r\n').split(',')
-            second_data_row = csvfile.readline().strip('\r\n').split(',')
-            third_data_row = csvfile.readline().strip('\r\n').split(',')
-
-        first_dict = dict(zip(self.fieldnames, first_data_row))
-        second_dict = dict(zip(self.fieldnames, second_data_row))
-        third_dict = dict(zip(self.fieldnames, third_data_row))
+        """
+        Test if the line-dictionary built by CsvParser
+        contains proper values
+        """
         gen_dict = self.csv_parser.parse()
         parsed_first_dict = gen_dict.next()
         parsed_second_dict = gen_dict.next()
         parsed_third_dict = gen_dict.next()
-        self.assertEqual(first_dict, parsed_first_dict)
-        self.assertEqual(second_dict, parsed_second_dict)
-        self.assertEqual(third_dict, parsed_third_dict)
+        self.assertEqual(self.first_dict, parsed_first_dict)
+        self.assertEqual(self.second_dict, parsed_second_dict)
+        self.assertEqual(self.third_dict, parsed_third_dict)

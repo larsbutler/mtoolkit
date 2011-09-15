@@ -26,7 +26,11 @@ import csv
 class CsvParser(object):
     """
     CsvParser allows to parse csv file in
-    an iterative way
+    an iterative way, building a dictionary
+    for every data line inside the csv file,
+    dictionary's keys correspond to the csv
+    fieldnames while dictionary values are the
+    corresponding fieldname/column value.
     """
 
     def __init__(self, filename):
