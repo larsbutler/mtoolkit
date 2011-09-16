@@ -59,7 +59,7 @@ class CsvReaderTestCase(unittest.TestCase):
     def test_get_csv_fieldnames(self):
         self.assertEqual(self.fieldnames, self.csv_reader.fieldnames)
 
-    def test_number_data_rows_equals_number_genereted_entries(self):
+    def test_number_data_rows_equals_number_gen_entries(self):
         expected_entries = 10
         read_eq_entries = 0
         for eq_entries in self.csv_reader.read():
