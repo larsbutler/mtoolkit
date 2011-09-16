@@ -17,31 +17,24 @@
 # version 3 along with OpenQuake. If not, see
 # <http://www.gnu.org/licenses/lgpl-3.0.txt> for a copy of the LGPLv3 License.
 
-""" Unit Tests for the eqcatalog module """
 
 import os
 import unittest
-from mtoolkit.eqcatalog import CsvParser
+from mtoolkit.eqcatalog import CsvReader
 
 DATA_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), 'data'))
 
 
-def get_data_path(file_name):
-    """ Returns the data path of files used in test """
-    return os.path.join(DATA_DIR, file_name)
+def get_data_path(filename):
+    """Returns the data path of files used in test"""
+    return os.path.join(DATA_DIR, filename)
 
 
-class CsvParserTestCase(unittest.TestCase):
-    """
-    Unit tests for the CsvParser class, which parses
-    csv files
-    """
+class CsvReaderTestCase(unittest.TestCase):
 
     def setUp(self):
-        """ Test Fixture """
-        self.incorrect_filename = 'data/example.csv'
         self.correct_filename = get_data_path('ISC_small_data.csv')
-        self.csv_parser = CsvParser(self.correct_filename)
+        self.csv_reader = CsvReader(self.correct_filename)
         self.fieldnames = ['eventID', 'Agency', 'Identifier',
                             'year', 'month', 'day',
                             'hour', 'minute', 'second',
@@ -56,40 +49,32 @@ class CsvParserTestCase(unittest.TestCase):
             first_data_row = csvfile.readline().strip('\r\n').split(',')
             second_data_row = csvfile.readline().strip('\r\n').split(',')
             third_data_row = csvfile.readline().strip('\r\n').split(',')
-        self.first_dict = dict(zip(self.fieldnames, first_data_row))
-        self.second_dict = dict(zip(self.fieldnames, second_data_row))
-        self.third_dict = dict(zip(self.fieldnames, third_data_row))
+        self.eq_entry_1 = dict(zip(self.fieldnames, first_data_row))
+        self.eq_entry_2 = dict(zip(self.fieldnames, second_data_row))
+        self.eq_entry_3 = dict(zip(self.fieldnames, third_data_row))
 
     def test_an_incorrect_csv_filename_raise_exception(self):
-        """
-        CsvParser object raises an exception if a bad
-        filename is provided to the contructor
-        """
-        self.assertRaises(IOError, CsvParser, self.incorrect_filename)
+        self.assertRaises(IOError, CsvReader, "UNKNOWN_FILE_NAME.csv")
 
     def test_get_csv_fieldnames(self):
-        """ Test if csv fieldnames extracted by the parser are correct """
-        self.assertEqual(self.fieldnames, self.csv_parser.fieldnames)
+        self.assertEqual(self.fieldnames, self.csv_reader.fieldnames)
 
     def test_number_data_rows_equals_number_genereted_dict(self):
         number_data_rows = -1  # First line with fieldnames
         with open(self.correct_filename) as csv_file:
             for line in csv_file:
                 number_data_rows = number_data_rows + 1
-        number_generated_dict = 0
-        for data_dict in self.csv_parser.parse():
-            number_generated_dict = number_generated_dict + 1
-        self.assertEqual(number_data_rows, number_generated_dict)
+        number_generated_eq_entry = 0
+        for data_dict in self.csv_reader.read():
+            number_generated_eq_entry = number_generated_eq_entry + 1
+        self.assertEqual(number_data_rows, number_generated_eq_entry)
 
-    def test_parse_line(self):
+    def test_read_line(self):
         """
-        Test if the line-dictionary built by CsvParser
+        Test if the EQ definition built by CsvReader
         contains proper values
         """
-        gen_dict = self.csv_parser.parse()
-        parsed_first_dict = gen_dict.next()
-        parsed_second_dict = gen_dict.next()
-        parsed_third_dict = gen_dict.next()
-        self.assertEqual(self.first_dict, parsed_first_dict)
-        self.assertEqual(self.second_dict, parsed_second_dict)
-        self.assertEqual(self.third_dict, parsed_third_dict)
+        eqcatalog = self.csv_reader.read()
+        self.assertEqual(self.eq_entry_1, eqcatalog.next())
+        self.assertEqual(self.eq_entry_2, eqcatalog.next())
+        self.assertEqual(self.eq_entry_3, eqcatalog.next())

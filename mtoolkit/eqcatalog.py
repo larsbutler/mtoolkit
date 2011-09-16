@@ -17,15 +17,19 @@
 # version 3 along with OpenQuake. If not, see
 # <http://www.gnu.org/licenses/lgpl-3.0.txt> for a copy of the LGPLv3 License.
 
-""" Provide a way to parse csv files """
+"""
+The purpose of this module is to provide objects
+to read EQCatalogs in different formats such as:
+csv, nrml.
+"""
 
 import os
 import csv
 
 
-class CsvParser(object):
+class CsvReader(object):
     """
-    CsvParser allows to parse csv file in
+    CsvReader allows to read csv file in
     an iterative way, building a dictionary
     for every data line inside the csv file,
     dictionary's keys correspond to the csv
@@ -36,21 +40,24 @@ class CsvParser(object):
     def __init__(self, filename):
         file_exists = os.path.exists(filename)
         if not file_exists:
-            raise IOError('File not found')
+            raise IOError('File %s not found' % filename)
         self.filename = filename
 
-    def parse(self):
-        """ Parse the csv file specified by its filename """
+    def read(self):
+        """
+        Returns a generator that provides an EQ definition
+        in a dictionary for each line of the file.
+        """
         with open(self.filename, 'rb') as csv_file:
             reader = csv.reader(csv_file)
             reader.next()  # Skip the first line containing fieldnames
             for line in reader:
-                line_dict = dict(zip(self.fieldnames, line))
-                yield line_dict
+                eq_entry = dict(zip(self.fieldnames, line))
+                yield eq_entry
 
     @property
     def fieldnames(self):
-        """ Get the fieldnames inside the csv file """
+        """Return the fieldnames inside the csv file."""
         with open(self.filename, 'rb') as csv_file:
             reader = csv.DictReader(csv_file).fieldnames
         return reader
