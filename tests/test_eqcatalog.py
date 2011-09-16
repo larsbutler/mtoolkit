@@ -17,7 +17,6 @@
 # version 3 along with OpenQuake. If not, see
 # <http://www.gnu.org/licenses/lgpl-3.0.txt> for a copy of the LGPLv3 License.
 
-
 import os
 import unittest
 from mtoolkit.eqcatalog import CsvReader
@@ -62,7 +61,7 @@ class CsvReaderTestCase(unittest.TestCase):
     def test_number_data_rows_equals_number_gen_entries(self):
         expected_entries = 10
         read_eq_entries = 0
-        for eq_entries in self.csv_reader.read():
+        for _ in self.csv_reader.read():
             read_eq_entries += 1
         self.assertEqual(expected_entries, read_eq_entries)
 
