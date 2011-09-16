@@ -26,7 +26,7 @@ DATA_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), 'data'))
 
 
 def get_data_path(filename):
-    """Returns the data path of files used in test"""
+    """Return the data path of files used in test."""
     return os.path.join(DATA_DIR, filename)
 
 
@@ -54,25 +54,22 @@ class CsvReaderTestCase(unittest.TestCase):
         self.eq_entry_3 = dict(zip(self.fieldnames, third_data_row))
 
     def test_an_incorrect_csv_filename_raise_exception(self):
-        self.assertRaises(IOError, CsvReader, "UNKNOWN_FILE_NAME.csv")
+        self.assertRaises(IOError, CsvReader, "UNKNOWN_FILENAME.csv")
 
     def test_get_csv_fieldnames(self):
         self.assertEqual(self.fieldnames, self.csv_reader.fieldnames)
 
-    def test_number_data_rows_equals_number_genereted_dict(self):
-        number_data_rows = -1  # First line with fieldnames
-        with open(self.correct_filename) as csv_file:
-            for line in csv_file:
-                number_data_rows = number_data_rows + 1
-        number_generated_eq_entry = 0
-        for data_dict in self.csv_reader.read():
-            number_generated_eq_entry = number_generated_eq_entry + 1
-        self.assertEqual(number_data_rows, number_generated_eq_entry)
+    def test_number_data_rows_equals_number_genereted_entries(self):
+        expected_entries = 10
+        read_eq_entries = 0
+        for eq_entries in self.csv_reader.read():
+            read_eq_entries += 1
+        self.assertEqual(expected_entries, read_eq_entries)
 
-    def test_read_line(self):
+    def test_read_entries(self):
         """
-        Test if the EQ definition built by CsvReader
-        contains proper values
+        Test if the EQ definitions built by CsvReader
+        contain proper values.
         """
         eqcatalog = self.csv_reader.read()
         self.assertEqual(self.eq_entry_1, eqcatalog.next())

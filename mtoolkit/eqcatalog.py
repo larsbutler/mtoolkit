@@ -45,7 +45,7 @@ class CsvReader(object):
 
     def read(self):
         """
-        Returns a generator that provides an EQ definition
+        Return a generator that provides an EQ definition
         in a dictionary for each line of the file.
         """
         with open(self.filename, 'rb') as csv_file:
