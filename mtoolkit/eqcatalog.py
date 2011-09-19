@@ -82,11 +82,13 @@ class SourceModelReader(object):
         file_exists = os.path.exists(filename)
         if not file_exists:
             raise IOError('File %s not found' % filename)
-        if not self.valid_schema(filename, schema):
-            raise XMLValidationError(filename)
+        if not SourceModelReader.valid_schema(filename, schema):
+            raise XMLValidationError(filename, 'The source model doesn\'t conform to the schema')
         self.filename = filename
+        self.schema = schema
 
-    def valid_schema(self, source_model_path, schema_path):
+    @staticmethod
+    def valid_schema(source_model_path, schema_path):
         xml_doc = etree.parse(source_model_path)
         xmlschema = etree.XMLSchema(etree.parse(schema_path))
         return xmlschema.validate(xml_doc)

@@ -19,7 +19,7 @@
 
 import os
 import unittest
-from mtoolkit.eqcatalog import CsvReader, SourceModelReader
+from mtoolkit.eqcatalog import CsvReader, SourceModelReader, XMLValidationError
 
 DATA_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), 'data'))
 SCHEMA_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__),
@@ -81,11 +81,14 @@ class SourceModelReaderTestCase(unittest.TestCase):
     
     def setUp(self):
         self.correct_filename = get_data_path('example_areaSource.xml',DATA_DIR)
-        self.schema = get_data_path('nrml_seismic.xsd', SCHEMA_DIR)
+        self.incorrect_nrml = get_data_path('incorrect_areaSource.xml', DATA_DIR)
+        self.schema = get_data_path('nrml.xsd', SCHEMA_DIR)
         self.sm_reader = SourceModelReader(self.correct_filename, self.schema)
     
     def test_an_incorrect_source_model_filename_raise_exception(self):
-        self.assertRaises(IOError, SourceModelReader, FILE_NAME_ERROR)
+        self.assertRaises(IOError, SourceModelReader, FILE_NAME_ERROR,
+                            self.schema)
 
     def test_an_incorrect_source_model_document_raise_exception(self):
-        self.assertRaise(XMLValidationError, SourceModelReader, "Source model document doesn't conform to the specified schema")
+        self.assertRaises(XMLValidationError, SourceModelReader,
+            self.incorrect_nrml, self.schema)
