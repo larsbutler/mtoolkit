@@ -19,20 +19,22 @@
 
 import os
 import unittest
-from mtoolkit.eqcatalog import CsvReader
+from mtoolkit.eqcatalog import CsvReader, SourceModelReader
 
 DATA_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), 'data'))
+SCHEMA_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__),
+                            '../nrml/schema'))
+FILE_NAME_ERROR = "Unknown filename"
 
-
-def get_data_path(filename):
+def get_data_path(filename, dirname):
     """Return the data path of files used in test."""
-    return os.path.join(DATA_DIR, filename)
+    return os.path.join(dirname, filename)
 
 
 class CsvReaderTestCase(unittest.TestCase):
 
     def setUp(self):
-        self.correct_filename = get_data_path('ISC_small_data.csv')
+        self.correct_filename = get_data_path('ISC_small_data.csv', DATA_DIR)
         self.csv_reader = CsvReader(self.correct_filename)
         self.fieldnames = ['eventID', 'Agency', 'Identifier',
                             'year', 'month', 'day',
@@ -53,7 +55,7 @@ class CsvReaderTestCase(unittest.TestCase):
         self.eq_entry_3 = dict(zip(self.fieldnames, third_data_row))
 
     def test_an_incorrect_csv_filename_raise_exception(self):
-        self.assertRaises(IOError, CsvReader, "UNKNOWN_FILENAME.csv")
+        self.assertRaises(IOError, CsvReader, FILE_NAME_ERROR)
 
     def test_get_csv_fieldnames(self):
         self.assertEqual(self.fieldnames, self.csv_reader.fieldnames)
@@ -74,3 +76,16 @@ class CsvReaderTestCase(unittest.TestCase):
         self.assertEqual(self.eq_entry_1, eqcatalog.next())
         self.assertEqual(self.eq_entry_2, eqcatalog.next())
         self.assertEqual(self.eq_entry_3, eqcatalog.next())
+
+class SourceModelReaderTestCase(unittest.TestCase):
+    
+    def setUp(self):
+        self.correct_filename = get_data_path('example_areaSource.xml',DATA_DIR)
+        self.schema = get_data_path('nrml_seismic.xsd', SCHEMA_DIR)
+        self.sm_reader = SourceModelReader(self.correct_filename, self.schema)
+    
+    def test_an_incorrect_source_model_filename_raise_exception(self):
+        self.assertRaises(IOError, SourceModelReader, FILE_NAME_ERROR)
+
+    def test_an_incorrect_source_model_document_raise_exception(self):
+        self.assertRaise(XMLValidationError, SourceModelReader, "Source model document doesn't conform to the specified schema")

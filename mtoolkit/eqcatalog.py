@@ -25,6 +25,7 @@ csv, nrml.
 
 import os
 import csv
+from lxml import etree
 
 
 class CsvReader(object):
@@ -61,3 +62,31 @@ class CsvReader(object):
         with open(self.filename, 'rb') as csv_file:
             reader = csv.DictReader(csv_file).fieldnames
         return reader
+
+class XMLValidationError(Exception):
+    """XML schema validation error"""
+
+    def __init__(self, filename, message):
+        """Constructs a new validation exception for the given file name"""
+        self.args = (filename, message)
+        self.filename = filename
+        self.message = message
+
+class SourceModelReader(object):
+    """
+    SourceModelReader allows to read source model in nrml
+    file in an iterative way.
+    """
+
+    def __init__(self, filename, schema):
+        file_exists = os.path.exists(filename)
+        if not file_exists:
+            raise IOError('File %s not found' % filename)
+        if not self.valid_schema(filename, schema):
+            raise XMLValidationError(filename)
+        self.filename = filename
+
+    def valid_schema(self, source_model_path, schema_path):
+        xml_doc = etree.parse(source_model_path)
+        xmlschema = etree.XMLSchema(etree.parse(schema_path))
+        return xmlschema.validate(xml_doc)
