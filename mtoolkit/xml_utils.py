@@ -30,7 +30,6 @@ QUAKEML = "{%s}" % QUAKEML_NS
 NSMAP = {None: NRML_NS, "gml": GML_NS}
 NSMAP_WITH_QUAKEML = {None: NRML_NS, "gml": GML_NS, "qml": QUAKEML_NS}
 
-SOURCE_MODEL = "%ssourceModel" % NRML
 SOURCE_MODEL_ID_ATTR = "%sid" % GML
 AREA_SOURCE = "%sareaSource" % NRML
 AREA_SOURCE_ID = "%sid" % GML

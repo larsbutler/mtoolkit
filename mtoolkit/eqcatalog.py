@@ -86,41 +86,39 @@ class SourceModelReader(object):
             for source_model in etree.iterparse(nrml_file,
                 tag=xml_utils.AREA_SOURCE):
                 if source_model[1].tag == xml_utils.AREA_SOURCE:
-                    source_model_id = source_model[1].get\
-                                        (xml_utils.SOURCE_MODEL_ID_ATTR)
-                    source = self.parse_area_source(source_model_id, source_model)
+                    source_model_id = source_model[1].getparent().get(xml_utils.SOURCE_MODEL_ID_ATTR)
+                    source = self.parse_area_source(source_model_id, source_model[1])
                     source_model[1].clear()
                 yield source
 
     def parse_area_source(self, source_model_id, source_model):
 
         area_source = {'type':'area_source'}
-        elem = 1
 
         area_source['id_sm'] = source_model_id
         
-        as_id = source_model[elem].get(xml_utils.AREA_SOURCE_ID)
+        as_id = source_model.get(xml_utils.AREA_SOURCE_ID)
         area_source['id_as'] = as_id
 
-        as_name = source_model[elem].find(xml_utils.GML_NAME).text
+        as_name = source_model.find(xml_utils.GML_NAME).text
         area_source['name'] = as_name
 
-        as_tectonic_region = source_model[elem].find(xml_utils.TECTONIC_REGION).text
+        as_tectonic_region = source_model.find(xml_utils.TECTONIC_REGION).text
         area_source['tectonic_region'] = as_tectonic_region
 
         as_area_boundary = self._read_area_boundary\
-                            (source_model[elem].find(xml_utils.AREA_BOUNDARY))
+                            (source_model.find(xml_utils.AREA_BOUNDARY))
         area_source['area_boundary'] = as_area_boundary
 
         as_rupture_rate_model = self._read_rupture_rate_model\
-                                (source_model[elem].find(xml_utils.RUPTURE_RATE_MODEL))
+                                (source_model.find(xml_utils.RUPTURE_RATE_MODEL))
         area_source['rupture_rate_model'] = as_rupture_rate_model
 
         as_rupture_depth_distribution = self._read_rupture_depth_distrib\
-                                    (source_model[elem].find(xml_utils.RUPTURE_DEPTH_DISTRIB))
+                                    (source_model.find(xml_utils.RUPTURE_DEPTH_DISTRIB))
         area_source['rupture_depth_distribution'] = as_rupture_depth_distribution
         
-        as_hypocentral_depth = source_model[elem].find(xml_utils.HYPOCENTRAL_DEPTH).text
+        as_hypocentral_depth = source_model.find(xml_utils.HYPOCENTRAL_DEPTH).text
         area_source['hypocentral_depth'] = as_hypocentral_depth
         return area_source
 
