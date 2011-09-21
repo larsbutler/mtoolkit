@@ -19,7 +19,8 @@
 
 import os
 import unittest
-from mtoolkit.eqcatalog import CsvReader, SourceModelReader, XMLValidationError
+from mtoolkit import xml_utils
+from mtoolkit.eqcatalog import CsvReader, SourceModelReader
 
 DATA_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), 'data'))
 SCHEMA_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__),
@@ -90,5 +91,17 @@ class SourceModelReaderTestCase(unittest.TestCase):
                             self.schema)
 
     def test_an_incorrect_source_model_document_raise_exception(self):
-        self.assertRaises(XMLValidationError, SourceModelReader,
+        self.assertRaises(xml_utils.XMLValidationError, SourceModelReader,
             self.incorrect_nrml, self.schema)
+
+    @unittest.skip
+    def test_number_area_source_entries_equals_number_gen_entries(self):
+        expected_entries = 2
+        read_as_entries = 0
+        for _ in self.sm_reader.read():
+            read_as_entries += 1
+        self.assertEqual(expected_entries, read_as_entries)
+
+    @unittest.skip
+    def test_area_source_entry_equal_gen_entry(self):
+        pass
