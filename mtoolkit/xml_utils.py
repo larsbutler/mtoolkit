@@ -17,6 +17,12 @@
 # version 3 along with OpenQuake. If not, see
 # <http://www.gnu.org/licenses/lgpl-3.0.txt> for a copy of the LGPLv3 License.
 
+"""
+The purpose of this module is to provide constants,
+and some utilities: function and exception to deal
+with nrml (xml file format).
+"""
+
 from lxml import etree
 
 NRML_NS = 'http://openquake.org/xmlns/nrml/0.2'
@@ -51,22 +57,26 @@ NODAL_PLANE_STRIKE = "%sstrike" % QUAKEML
 NODAL_PLANE_DIP = "%sdip" % QUAKEML
 NODAL_PLANE_RAKE = "%srake" % QUAKEML
 
-RUPTURE_DEPTH_DISTRIB = "%sruptureDepthDistribution" % NRML 
+RUPTURE_DEPTH_DISTRIB = "%sruptureDepthDistribution" % NRML
 MAGNITUDE = "%smagnitude" % NRML
 DEPTH = "%sdepth" % NRML
 
 HYPOCENTRAL_DEPTH = "%shypocentralDepth" % NRML
+
 
 class XMLValidationError(Exception):
     """XML schema validation error"""
 
     def __init__(self, filename, message):
         """Constructs a new validation exception for the given file name"""
+        Exception.__init__(self, message)
         self.args = (filename, message)
         self.filename = filename
         self.message = message
 
+
 def valid_schema(source_model_path, schema_path):
-        xml_doc = etree.parse(source_model_path)
-        xmlschema = etree.XMLSchema(etree.parse(schema_path))
-        return xmlschema.validate(xml_doc)
+    """Check if the xml is conform to the schema provided"""
+    xml_doc = etree.parse(source_model_path)
+    xmlschema = etree.XMLSchema(etree.parse(schema_path))
+    return xmlschema.validate(xml_doc)

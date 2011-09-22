@@ -141,7 +141,6 @@ class SourceModelReader(object):
         """
 
         focal_mechanism = {'name': 'focal_mechanism'}
-        nodal_plane_read = {}
 
         focal_mechanism_id = rupture_rate_model.find('.//%s' %
                 xml_utils.FOCAL_MECHANISM).get(xml_utils.FM_ID_ATTR)
@@ -150,9 +149,11 @@ class SourceModelReader(object):
         nodal_planes = rupture_rate_model.find('.//%s' %
                 xml_utils.NODAL_PLANES)
         list_nodal_plane = []
-        id_nodal_plane = 0
-        for nodal_plane in nodal_planes.iterchildren():
-            nodal_plane_read['id'] = id_nodal_plane
+        child = 0
+        for nodal_plane in nodal_planes:
+            nodal_plane_read = {}
+
+            nodal_plane_read['id'] = child
 
             np_strike = nodal_plane.find('.//%s' %
                     xml_utils.NODAL_PLANE_STRIKE).getchildren()[0].text
@@ -166,7 +167,7 @@ class SourceModelReader(object):
                     xml_utils.NODAL_PLANE_RAKE).getchildren()[0].text
             nodal_plane_read['rake'] = np_rake
             list_nodal_plane.append(nodal_plane_read)
-            id_nodal_plane += 1
+            child += 1
         nodal_planes.clear()
 
         focal_mechanism['nodal_planes'] = list_nodal_plane
