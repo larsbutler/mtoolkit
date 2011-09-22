@@ -17,19 +17,9 @@
 # version 3 along with OpenQuake. If not, see
 # <http://www.gnu.org/licenses/lgpl-3.0.txt> for a copy of the LGPLv3 License.
 
-import os
 import unittest
-from mtoolkit import xml_utils
-from mtoolkit.eqcatalog import CsvReader, SourceModelReader
-
-DATA_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), 'data'))
-SCHEMA_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__),
-                            '../nrml/schema'))
-FILE_NAME_ERROR = "Unknown filename"
-
-def get_data_path(filename, dirname):
-    """Return the data path of files used in test."""
-    return os.path.join(dirname, filename)
+from mtoolkit.eqcatalog import CsvReader
+from tests.test_utils import get_data_path, DATA_DIR, FILE_NAME_ERROR
 
 
 class CsvReaderTestCase(unittest.TestCase):
@@ -77,31 +67,3 @@ class CsvReaderTestCase(unittest.TestCase):
         self.assertEqual(self.eq_entry_1, eqcatalog.next())
         self.assertEqual(self.eq_entry_2, eqcatalog.next())
         self.assertEqual(self.eq_entry_3, eqcatalog.next())
-
-class SourceModelReaderTestCase(unittest.TestCase):
-    
-    def setUp(self):
-        self.correct_filename = get_data_path('example_areaSource.xml',DATA_DIR)
-        self.incorrect_nrml = get_data_path('incorrect_areaSource.xml', DATA_DIR)
-        self.schema = get_data_path('nrml.xsd', SCHEMA_DIR)
-        self.sm_reader = SourceModelReader(self.correct_filename, self.schema)
-    
-    def test_an_incorrect_source_model_filename_raise_exception(self):
-        self.assertRaises(IOError, SourceModelReader, FILE_NAME_ERROR,
-                            self.schema)
-
-    def test_an_incorrect_source_model_document_raise_exception(self):
-        self.assertRaises(xml_utils.XMLValidationError, SourceModelReader,
-            self.incorrect_nrml, self.schema)
-
-    @unittest.skip
-    def test_number_area_source_entries_equals_number_gen_entries(self):
-        expected_entries = 2
-        read_as_entries = 0
-        for _ in self.sm_reader.read():
-            read_as_entries += 1
-        self.assertEqual(expected_entries, read_as_entries)
-
-    @unittest.skip
-    def test_area_source_entry_equal_gen_entry(self):
-        pass
