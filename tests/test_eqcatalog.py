@@ -17,22 +17,17 @@
 # version 3 along with OpenQuake. If not, see
 # <http://www.gnu.org/licenses/lgpl-3.0.txt> for a copy of the LGPLv3 License.
 
-import os
 import unittest
+
 from mtoolkit.eqcatalog import CsvReader
 
-DATA_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), 'data'))
-
-
-def get_data_path(filename):
-    """Return the data path of files used in test."""
-    return os.path.join(DATA_DIR, filename)
+from tests.test_utils import get_data_path, DATA_DIR, FILE_NAME_ERROR
 
 
 class CsvReaderTestCase(unittest.TestCase):
 
     def setUp(self):
-        self.correct_filename = get_data_path('ISC_small_data.csv')
+        self.correct_filename = get_data_path('ISC_small_data.csv', DATA_DIR)
         self.csv_reader = CsvReader(self.correct_filename)
         self.fieldnames = ['eventID', 'Agency', 'Identifier',
                             'year', 'month', 'day',
@@ -53,7 +48,7 @@ class CsvReaderTestCase(unittest.TestCase):
         self.eq_entry_3 = dict(zip(self.fieldnames, third_data_row))
 
     def test_an_incorrect_csv_filename_raise_exception(self):
-        self.assertRaises(IOError, CsvReader, "UNKNOWN_FILENAME.csv")
+        self.assertRaises(IOError, CsvReader, FILE_NAME_ERROR)
 
     def test_get_csv_fieldnames(self):
         self.assertEqual(self.fieldnames, self.csv_reader.fieldnames)
