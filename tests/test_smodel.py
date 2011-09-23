@@ -20,13 +20,13 @@
 import unittest
 
 from mtoolkit import xml_utils
-from mtoolkit.smodel import SourceModelReader
+from mtoolkit.smodel import NRMLReader
 
 from tests.test_utils import get_data_path, DATA_DIR, \
     SCHEMA_DIR, FILE_NAME_ERROR
 
 
-class SourceModelReaderTestCase(unittest.TestCase):
+class NRMLReaderTestCase(unittest.TestCase):
 
     def setUp(self):
         self.correct_filename = get_data_path(
@@ -34,21 +34,21 @@ class SourceModelReaderTestCase(unittest.TestCase):
         self.incorrect_nrml = get_data_path(
             'incorrect_areaSource.xml', DATA_DIR)
         self.schema = get_data_path('nrml.xsd', SCHEMA_DIR)
-        self.sm_reader = SourceModelReader(self.correct_filename, self.schema)
-        self.gen_as = self.sm_reader.read().next()
+        self.nrml_reader = NRMLReader(self.correct_filename, self.schema)
+        self.gen_as = self.nrml_reader.read().next()
 
     def test_incorrect_sm_filename_raise_exception(self):
-        self.assertRaises(IOError, SourceModelReader, FILE_NAME_ERROR,
+        self.assertRaises(IOError, NRMLReader, FILE_NAME_ERROR,
                             self.schema)
 
     def test_incorrect_sm_document_raise_exception(self):
-        self.assertRaises(xml_utils.XMLValidationError, SourceModelReader,
+        self.assertRaises(xml_utils.XMLValidationError, NRMLReader,
             self.incorrect_nrml, self.schema)
 
     def test_number_as_entries_equals_number_gen_entries(self):
         expected_entries = 2
         read_as_entries = 0
-        for _ in self.sm_reader.read():
+        for _ in self.nrml_reader.read():
             read_as_entries += 1
         self.assertEqual(expected_entries, read_as_entries)
 

@@ -32,9 +32,9 @@ from mtoolkit import xml_utils
 XML_NODE = 1
 
 
-class SourceModelReader(object):
+class NRMLReader(object):
     """
-    SourceModelReader allows to read source models (SM)
+    NRMLReader allows to read source models (SM)
     in a nrml file, in an iterative way by providing
     a dict data structure.
     """
