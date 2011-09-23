@@ -24,8 +24,12 @@ file.
 """
 
 import os
-import mtoolkit.xml_utils as xml_utils
+
 from lxml import etree
+
+from mtoolkit import xml_utils
+
+XML_NODE = 1
 
 
 class SourceModelReader(object):
@@ -41,9 +45,8 @@ class SourceModelReader(object):
             raise IOError('File %s not found' % filename)
         if not xml_utils.valid_schema(filename, schema):
             raise xml_utils.XMLValidationError(filename,
-               'The source model is not conform to the schema')
+               'The source model does not conform to the schema')
         self.filename = filename
-        self.schema = schema
 
     def read(self):
         """
@@ -52,14 +55,13 @@ class SourceModelReader(object):
         """
 
         with open(self.filename, 'rb') as nrml_file:
-            elem = 1
             for source_model in etree.iterparse(nrml_file,
                 tag=xml_utils.AREA_SOURCE):
-                if source_model[elem].tag == xml_utils.AREA_SOURCE:
-                    source_model_id = source_model[elem].getparent().get(
+                if source_model[XML_NODE].tag == xml_utils.AREA_SOURCE:
+                    source_model_id = source_model[XML_NODE].getparent().get(
                         xml_utils.SOURCE_MODEL_ID_ATTR)
                     source = self._parse_area_source(source_model_id,
-                            source_model[elem])
+                            source_model[XML_NODE])
                 yield source
 
     def _parse_area_source(self, source_model_id, source_model):
@@ -94,25 +96,21 @@ class SourceModelReader(object):
         as_name = source_model.find(xml_utils.GML_NAME).text
         area_source['name'] = as_name
 
-        as_tectonic_region = source_model.find(xml_utils.TECTONIC_REGION).text
-        area_source['tectonic_region'] = as_tectonic_region
+        area_source['tectonic_region'] = source_model.find(
+            xml_utils.TECTONIC_REGION).text
 
-        as_area_boundary = self._parse_area_boundary(source_model.find(
-                xml_utils.AREA_BOUNDARY))
-        area_source['area_boundary'] = as_area_boundary
+        area_source['area_boundary'] = self._parse_area_boundary(
+            source_model.find(xml_utils.AREA_BOUNDARY))
 
-        as_rupture_rate_model = self._parse_rupture_rate_model(
+        area_source['rupture_rate_model'] = self._parse_rupture_rate_model(
             source_model.find(xml_utils.RUPTURE_RATE_MODEL))
-        area_source['rupture_rate_model'] = as_rupture_rate_model
 
-        as_rupture_depth_distribution = self._parse_rupture_depth_distrib(
-            source_model.find(xml_utils.RUPTURE_DEPTH_DISTRIB))
         area_source['rupture_depth_distribution'] = \
-                                as_rupture_depth_distribution
+                                self._parse_rupture_depth_distrib(
+            source_model.find(xml_utils.RUPTURE_DEPTH_DISTRIB))
 
-        as_hypocentral_depth = source_model.find(
-            xml_utils.HYPOCENTRAL_DEPTH).text
-        area_source['hypocentral_depth'] = as_hypocentral_depth
+        area_source['hypocentral_depth'] = float(source_model.find(
+            xml_utils.HYPOCENTRAL_DEPTH).text)
 
         source_model.clear()
         return area_source
@@ -125,7 +123,7 @@ class SourceModelReader(object):
 
         pos_list = area_boundary.find('.//%s' %
                 xml_utils.A_BOUNDARY_POS_LIST).text.split()
-        pos_couple_list = [(pos_list[i], pos_list[i + 1])
+        pos_couple_list = [((float(pos_list[i])), float(pos_list[i + 1]))
                 for i in xrange(0, len(pos_list), 2)]
 
         area_boundary.clear()
@@ -142,35 +140,32 @@ class SourceModelReader(object):
 
         focal_mechanism = {'name': 'focal_mechanism'}
 
-        focal_mechanism_id = rupture_rate_model.find('.//%s' %
+        focal_mechanism['id'] = rupture_rate_model.find('.//%s' %
                 xml_utils.FOCAL_MECHANISM).get(xml_utils.FM_ID_ATTR)
-        focal_mechanism['id'] = focal_mechanism_id
 
-        nodal_planes = rupture_rate_model.find('.//%s' %
+        nodal_plane_elems = rupture_rate_model.find('.//%s' %
                 xml_utils.NODAL_PLANES)
-        list_nodal_plane = []
+        nodal_planes = []
         child = 0
-        for nodal_plane in nodal_planes:
+        for nodal_plane_elem in nodal_plane_elems:
             nodal_plane_read = {}
 
             nodal_plane_read['id'] = child
 
-            np_strike = nodal_plane.find('.//%s' %
-                    xml_utils.NODAL_PLANE_STRIKE).getchildren()[0].text
-            nodal_plane_read['strike'] = np_strike
+            nodal_plane_read['strike'] = float(nodal_plane_elem.find('.//%s' %
+                    xml_utils.NODAL_PLANE_STRIKE).getchildren()[0].text)
 
-            np_dip = nodal_plane.find('.//%s' %
-                    xml_utils.NODAL_PLANE_DIP).getchildren()[0].text
-            nodal_plane_read['dip'] = np_dip
+            nodal_plane_read['dip'] = float(nodal_plane_elem.find('.//%s' %
+                    xml_utils.NODAL_PLANE_DIP).getchildren()[0].text)
 
-            np_rake = nodal_plane.find('.//%s' %
-                    xml_utils.NODAL_PLANE_RAKE).getchildren()[0].text
-            nodal_plane_read['rake'] = np_rake
-            list_nodal_plane.append(nodal_plane_read)
+            nodal_plane_read['rake'] = float(nodal_plane_elem.find('.//%s' %
+                    xml_utils.NODAL_PLANE_RAKE).getchildren()[0].text)
+
+            nodal_planes.append(nodal_plane_read)
             child += 1
-        nodal_planes.clear()
+        nodal_plane_elems.clear()
 
-        focal_mechanism['nodal_planes'] = list_nodal_plane
+        focal_mechanism['nodal_planes'] = nodal_planes
         return focal_mechanism
 
     def _parse_rupture_rate_model(self, rupture_rate_model):
@@ -182,21 +177,21 @@ class SourceModelReader(object):
         rupture_rate_model_read = []
         truncated_guten_richter = {'name': 'truncated_guten_richter'}
 
-        rrm_a_value_cumulative = rupture_rate_model.find('.//%s' %
-                xml_utils.A_VALUE_CUMULATIVE).text
-        truncated_guten_richter['a_value_cumulative'] = rrm_a_value_cumulative
+        truncated_guten_richter['a_value_cumulative'] = float(
+            rupture_rate_model.find('.//%s' %
+                xml_utils.A_VALUE_CUMULATIVE).text)
 
-        rrm_b_value = rupture_rate_model.find('.//%s' %
-                xml_utils.B_VALUE).text
-        truncated_guten_richter['b_value'] = rrm_b_value
+        truncated_guten_richter['b_value'] = float(
+            rupture_rate_model.find('.//%s' %
+                xml_utils.B_VALUE).text)
 
-        rrm_min_magnitude = rupture_rate_model.find('.//%s' %
-                xml_utils.MIN_MAGNITUDE).text
-        truncated_guten_richter['min_magnitude'] = rrm_min_magnitude
+        truncated_guten_richter['min_magnitude'] = float(
+            rupture_rate_model.find('.//%s' %
+                xml_utils.MIN_MAGNITUDE).text)
 
-        rrm_max_magnitude = rupture_rate_model.find('.//%s' %
-                xml_utils.MAX_MAGNITUDE).text
-        truncated_guten_richter['max_magnitude'] = rrm_max_magnitude
+        truncated_guten_richter['max_magnitude'] = float(
+            rupture_rate_model.find('.//%s' %
+                xml_utils.MAX_MAGNITUDE).text)
 
         rupture_rate_model_read.append(truncated_guten_richter)
 
@@ -213,9 +208,10 @@ class SourceModelReader(object):
         """
 
         rupture_depth_distrib_read = {}
-        magnitude = rupture_depth_distrib.find('.//%s' %
-                xml_utils.MAGNITUDE).text
-        depth = rupture_depth_distrib.find('.//%s' % xml_utils.DEPTH).text
+        magnitude = float(rupture_depth_distrib.find('.//%s' %
+                xml_utils.MAGNITUDE).text)
+        depth = float(rupture_depth_distrib.find('.//%s' %
+                xml_utils.DEPTH).text)
         rupture_depth_distrib.clear()
 
         rupture_depth_distrib_read['name'] = 'rupture_depth_distrib'

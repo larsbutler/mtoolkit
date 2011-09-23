@@ -18,7 +18,9 @@
 # <http://www.gnu.org/licenses/lgpl-3.0.txt> for a copy of the LGPLv3 License.
 
 import unittest
+
 from mtoolkit.eqcatalog import CsvReader
+
 from tests.test_utils import get_data_path, DATA_DIR, FILE_NAME_ERROR
 
 

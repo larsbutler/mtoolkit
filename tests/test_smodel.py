@@ -17,11 +17,13 @@
 # version 3 along with OpenQuake. If not, see
 # <http://www.gnu.org/licenses/lgpl-3.0.txt> for a copy of the LGPLv3 License.
 
+import unittest
+
 from mtoolkit import xml_utils
 from mtoolkit.smodel import SourceModelReader
+
 from tests.test_utils import get_data_path, DATA_DIR, \
     SCHEMA_DIR, FILE_NAME_ERROR
-import unittest
 
 
 class SourceModelReaderTestCase(unittest.TestCase):
@@ -62,7 +64,7 @@ class SourceModelReaderTestCase(unittest.TestCase):
         as_id = 'src_1'
         as_name = 'Source 8.CH.3'
         as_tectonic_region = 'Active Shallow Crust'
-        as_hypocentral_depth = '15.0'
+        as_hypocentral_depth = 15.0
 
         self.assertEqual(sm_id, self.gen_as.get('id_sm'))
         self.assertEqual(type_sm, self.gen_as.get('type'))
@@ -74,8 +76,8 @@ class SourceModelReaderTestCase(unittest.TestCase):
                 self.gen_as.get('hypocentral_depth'))
 
     def test_as_area_boundary(self):
-        pos_list = [('132.93', '42.85'), ('134.86', '41.82'),
-                ('129.73', '38.38'), ('128.15', '40.35')]
+        pos_list = [(132.93, 42.85), (134.86, 41.82),
+                (129.73, 38.38), (128.15, 40.35)]
         area_boundary = self.gen_as.get('area_boundary')
 
         self.assertEquals(pos_list,
@@ -84,10 +86,10 @@ class SourceModelReaderTestCase(unittest.TestCase):
     def test_as_rrm_truncated_gutenberg_richter(self):
         rrm_tgr = self.gen_as.get('rupture_rate_model')[0]
         name = 'truncated_guten_richter'
-        a_value_cumulative = '3.1612436654341836'
-        b_value = '0.7318999871612379'
-        min_magnitude = '5.0'
-        max_magnitude = '8.0'
+        a_value_cumulative = 3.1612436654341836
+        b_value = 0.7318999871612379
+        min_magnitude = 5.0
+        max_magnitude = 8.0
 
         self.assertEqual(name, rrm_tgr.get('name'))
         self.assertEqual(a_value_cumulative, rrm_tgr.get('a_value_cumulative'))
@@ -100,8 +102,8 @@ class SourceModelReaderTestCase(unittest.TestCase):
         fm_id = 'smi:fm1/0'
         name = 'focal_mechanism'
         number_nodal_planes = 2
-        second_nodal_plane = {'id': 1, 'strike': '12.0',
-                'rake': '0.0', 'dip': '40.0'}
+        second_nodal_plane = {'id': 1, 'strike': 12.0,
+                'rake': 0.0, 'dip': 40.0}
 
         self.assertEqual(fm_id, rrm_fm.get('id'))
         self.assertEqual(name, rrm_fm.get('name'))
@@ -113,8 +115,8 @@ class SourceModelReaderTestCase(unittest.TestCase):
     def test_rupture_depth_distribution(self):
         rdd = self.gen_as.get('rupture_depth_distribution')
         name = 'rupture_depth_distrib'
-        depth = '15.0'
-        magnitude = '5.0'
+        depth = 15.0
+        magnitude = 5.0
 
         self.assertEqual(name, rdd.get('name'))
         self.assertEqual(depth, rdd.get('depth'))
