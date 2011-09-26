@@ -56,7 +56,7 @@ class NRMLReader(object):
 
         with open(self.filename, 'rb') as nrml_file:
             for source_model in etree.iterparse(nrml_file):
-                
+
                 if source_model[XML_NODE].tag == xml_utils.AREA_SOURCE:
                     source_model_id = source_model[XML_NODE].getparent().get(
                         xml_utils.GML_ID)
@@ -64,11 +64,12 @@ class NRMLReader(object):
                             source_model[XML_NODE])
                     yield source
 
-                elif source_model[XML_NODE].tag == xml_utils.SIMPLE_FAULT_SOURCE:
+                elif source_model[XML_NODE].tag == \
+                    xml_utils.SIMPLE_FAULT_SOURCE:
                     source_model_id = source_model[XML_NODE].getparent().get(
                         xml_utils.GML_ID)
                     source = self._parse_simple_fault(source_model_id,
-                            source_model[XML_NODE])        
+                            source_model[XML_NODE])
                     yield source
 
     def _parse_area_source(self, source_model_id, source_model):
@@ -80,18 +81,19 @@ class NRMLReader(object):
         contains two dicts: truncated_guten_richter and
         focal_mechanism.
         Area source (as) complete dict structure description:
-            source_model_id
-            as_id
-            as_name
-            as_tectonic_region
-            {as_area_boundary: [(pos)]}
-            as_rupture_rate_model=
-                    [   {truncated_guten_richter},
-                        {focal_mechanism: [nodal_planes]
-                         where each nodal plane is {} }
-                    ]
+            type    - source model type
+            id_sm   - source model id
+            id_as   - area source id
+            name    - area source name
+            tectonic_region - area source tectonic region
+            {area_boundary: [(latitude, longitude)]}
+             rupture_rate_model=
+                [   {truncated_guten_richter},
+                    {focal_mechanism: [nodal_planes]
+                        where each nodal plane is {} }
+                ]
             {rupture_depth_distribution}
-            as_hypocentral_depth
+            hypocentral_depth
         """
 
         area_source = {'type': 'area_source'}
@@ -99,7 +101,7 @@ class NRMLReader(object):
 
         area_source['id_as'] = source_model.get(
             xml_utils.GML_ID)
- 
+
         area_source['name'] = source_model.find(
             xml_utils.GML_NAME).text
 
@@ -129,7 +131,7 @@ class NRMLReader(object):
         """
 
         pos_list = area_boundary.find('.//%s' %
-                xml_utils.A_BOUNDARY_POS_LIST).text.split()
+                xml_utils.POS_LIST).text.split()
         pos_couple_list = [((float(pos_list[i])), float(pos_list[i + 1]))
                 for i in xrange(0, len(pos_list), 2)]
 
@@ -196,7 +198,7 @@ class NRMLReader(object):
     def _parse_rupture_depth_distrib(self, rupture_depth_distrib):
         """
         Return a dict structure which contains rupture depth
-        distribuition.
+        distribuition data.
         """
 
         rupture_depth_distrib_read = {}
@@ -212,6 +214,11 @@ class NRMLReader(object):
         return rupture_depth_distrib_read
 
     def _parse_truncated_guten_richter(self, tgr_node):
+        """
+        Return a dict structure which contains truncated
+        gutenberg richter data
+        """
+
         truncated_guten_richter = {'name': 'truncated_guten_richter'}
 
         truncated_guten_richter['a_value_cumulative'] = float(
@@ -225,9 +232,29 @@ class NRMLReader(object):
 
         truncated_guten_richter['max_magnitude'] = float(
             tgr_node.find(xml_utils.MAX_MAGNITUDE).text)
+
+        tgr_node.clear()
+
         return truncated_guten_richter
 
     def _parse_simple_fault(self, source_model_id, source_model):
+        """
+        Return a complex dict data structure representing
+        the parsed simple fault source model, the dict data
+        structure also contains other dicts such as:
+        truncated_guten_richter and geometry
+
+        Simple Fault source (sf) complete dict structure description:
+            type    - source model type
+            id_sm   - source model id
+            id_sf   - simple fault id
+            name    - simple fault name
+            tectonic_region - simple fault tectonic region
+            rake    - simple fault rake
+            {truncated_guten_richter}
+            {geometry:[(lat, lon, depth)]}
+        """
+
         simple_fault = {'type': 'simple_fault'}
 
         simple_fault['id_sm'] = source_model_id
@@ -242,11 +269,11 @@ class NRMLReader(object):
 
         simple_fault['rake'] = float(source_model.find(
             xml_utils.RAKE).text)
-        
+
         simple_fault['truncated_guten_richter'] = \
             self._parse_truncated_guten_richter(source_model.find(
                     xml_utils.TRUNCATED_GUTEN_RICHTER))
-        
+
         simple_fault['geometry'] = \
             self._parse_simple_fault_geometry(source_model.find(
                     xml_utils.SIMPLE_FAULT_GEOMETRY))
@@ -255,17 +282,22 @@ class NRMLReader(object):
         return simple_fault
 
     def _parse_simple_fault_geometry(self, sf_geometry):
+        """
+        Return a dict structure which contains
+        geometry data.
+        """
+
         geometry = {'name': 'geometry'}
         geometry['id'] = sf_geometry.get(
             xml_utils.GML_ID)
 
         pos_list = sf_geometry.find('.//%s' %
-            xml_utils.A_BOUNDARY_POS_LIST).text.split()
+            xml_utils.POS_LIST).text.split()
         geometry['fault_trace_pos_list'] = \
-            [((float(pos_list[i])), 
+            [((float(pos_list[i])),
             float(pos_list[i + 1]), float(pos_list[i + 2]))
                 for i in xrange(0, len(pos_list), 3)]
- 
+
         geometry['dip'] = float(sf_geometry.find(
             xml_utils.DIP).text)
 
@@ -274,9 +306,7 @@ class NRMLReader(object):
 
         geometry['lower_seismogenic_depth'] = float(sf_geometry.find(
             xml_utils.LOWER_SEISMOGENIC_DEPTH).text)
-        sf_geometry.clear() 
+
+        sf_geometry.clear()
+
         return geometry
-        
-            
-
-

@@ -36,7 +36,8 @@ class NRMLReaderTestCase(unittest.TestCase):
         self.incorrect_nrml = get_data_path(
             'incorrect_areaSource.xml', DATA_DIR)
         self.schema = get_data_path('nrml.xsd', SCHEMA_DIR)
-        self.area_source_reader = NRMLReader(self.area_source_nrml, self.schema)
+        self.area_source_reader = NRMLReader(self.area_source_nrml,
+                self.schema)
         self.simple_fault_reader = NRMLReader(self.simple_fault_nrml,
                 self.schema)
         self.gen_as = self.area_source_reader.read().next()
@@ -157,16 +158,15 @@ class NRMLReaderTestCase(unittest.TestCase):
         self.assertEqual(min_magnitude, tgr.get('min_magnitude'))
         self.assertEqual(max_magnitude, tgr.get('max_magnitude'))
 
-    
     def test_sf_geometry(self):
         geo = self.gen_sf.get('geometry')
         name = 'geometry'
         geo_id = 'sfg_0'
         pos_list = [(19.5417, 40.0925, 1.0), (19.4654, 40.1496, 1.0), (19.3891,
-                    40.2067, 1.0), (19.297200000000004, 40.2833, 1.0), (19.2052,
-                    40.3599, 1.0), (19.1299, 40.4443, 1.0), 
-                    (19.0545, 40.5286,1.0), (18.9921, 40.629, 1.0),
-                    (18.9296, 40.7293, 1.0), (18.884, 40.8269, 1.0), 
+                    40.2067, 1.0), (19.297200000000004, 40.2833, 1.0),
+                    (19.2052, 40.3599, 1.0), (19.1299, 40.4443, 1.0),
+                    (19.0545, 40.5286, 1.0), (18.9921, 40.629, 1.0),
+                    (18.9296, 40.7293, 1.0), (18.884, 40.8269, 1.0),
                     (18.8385, 40.9245, 1.0), (18.8033, 41.0104, 1.0),
                     (18.7681, 41.09620000000001, 1.0)]
         dip = 37.5
@@ -181,4 +181,3 @@ class NRMLReaderTestCase(unittest.TestCase):
                 'upper_seismogenic_depth'))
         self.assertEqual(lower_seismogenic_depth, geo.get(
                 'lower_seismogenic_depth'))
-

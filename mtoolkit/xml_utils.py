@@ -33,16 +33,13 @@ NRML = "{%s}" % NRML_NS
 GML = "{%s}" % GML_NS
 QUAKEML = "{%s}" % QUAKEML_NS
 
-NSMAP = {None: NRML_NS, "gml": GML_NS}
-NSMAP_WITH_QUAKEML = {None: NRML_NS, "gml": GML_NS, "qml": QUAKEML_NS}
-
 AREA_SOURCE = "%sareaSource" % NRML
 GML_ID = "%sid" % GML
 GML_NAME = "%sname" % GML
 TECTONIC_REGION = "%stectonicRegion" % NRML
 
 AREA_BOUNDARY = "%sareaBoundary" % NRML
-A_BOUNDARY_POS_LIST = "%sposList" % GML
+POS_LIST = "%sposList" % GML
 
 TRUNCATED_GUTEN_RICHTER = "%struncatedGutenbergRichter" % NRML
 
