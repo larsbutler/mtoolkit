@@ -47,6 +47,8 @@ class NRMLReader(object):
             raise xml_utils.XMLValidationError(filename,
                'The source model does not conform to the schema')
         self.filename = filename
+        self.tag_action = {xml_utils.AREA_SOURCE: self._parse_area_source,
+            xml_utils.SIMPLE_FAULT_SOURCE: self._parse_simple_fault}
 
     def read(self):
         """
@@ -56,21 +58,12 @@ class NRMLReader(object):
 
         with open(self.filename, 'rb') as nrml_file:
             for source_model in etree.iterparse(nrml_file):
-
-                if source_model[XML_NODE].tag == xml_utils.AREA_SOURCE:
+                tag = source_model[XML_NODE].tag
+                if tag in self.tag_action:
                     source_model_id = source_model[XML_NODE].getparent().get(
-                        xml_utils.GML_ID)
-                    source = self._parse_area_source(source_model_id,
+                            xml_utils.GML_ID)
+                    yield self.tag_action[tag](source_model_id,
                             source_model[XML_NODE])
-                    yield source
-
-                elif source_model[XML_NODE].tag == \
-                    xml_utils.SIMPLE_FAULT_SOURCE:
-                    source_model_id = source_model[XML_NODE].getparent().get(
-                        xml_utils.GML_ID)
-                    source = self._parse_simple_fault(source_model_id,
-                            source_model[XML_NODE])
-                    yield source
 
     def _parse_area_source(self, source_model_id, source_model):
         """
@@ -234,7 +227,6 @@ class NRMLReader(object):
             tgr_node.find(xml_utils.MAX_MAGNITUDE).text)
 
         tgr_node.clear()
-
         return truncated_guten_richter
 
     def _parse_simple_fault(self, source_model_id, source_model):
@@ -308,5 +300,4 @@ class NRMLReader(object):
             xml_utils.LOWER_SEISMOGENIC_DEPTH).text)
 
         sf_geometry.clear()
-
         return geometry
