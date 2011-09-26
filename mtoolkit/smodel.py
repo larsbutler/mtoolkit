@@ -48,7 +48,8 @@ class NRMLReader(object):
                'The source model does not conform to the schema')
         self.filename = filename
         self.tag_action = {xml_utils.AREA_SOURCE: self._parse_area_source,
-            xml_utils.SIMPLE_FAULT_SOURCE: self._parse_simple_fault}
+            xml_utils.SIMPLE_FAULT_SOURCE: self._parse_simple_fault,
+            xml_utils.COMPLEX_FAULT_SOURCE: self._parse_complex_fault}
 
     def read(self):
         """
@@ -301,3 +302,27 @@ class NRMLReader(object):
 
         sf_geometry.clear()
         return geometry
+
+    def _parse_complex_fault(self, source_model_id, source_model):
+        """
+        Return a complex dict data structure representing
+        the parsed complex fault source model, the dict data
+        structure also contains other dicts such as:
+        """
+
+        complex_fault = {'type': 'complex_fault'}
+
+        complex_fault['id_sm'] = source_model_id
+
+        complex_fault['id_cf'] = source_model.get(xml_utils.GML_ID)
+
+        complex_fault['name'] = source_model.find(
+            xml_utils.GML_NAME).text
+
+        complex_fault['tectonic_region'] = source_model.find(
+            xml_utils.TECTONIC_REGION).text
+
+        complex_fault['rake'] = float(source_model.find(
+            xml_utils.RAKE).text)
+        
+        return complex_fault

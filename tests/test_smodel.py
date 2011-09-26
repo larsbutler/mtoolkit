@@ -33,15 +33,22 @@ class NRMLReaderTestCase(unittest.TestCase):
             'example_areaSource.xml', DATA_DIR)
         self.simple_fault_nrml = get_data_path(
             'simpleFaultModel.xml', DATA_DIR)
+        self.complex_fault_nrml = get_data_path(
+            'cascadia_complex_source.xml', DATA_DIR)
         self.incorrect_nrml = get_data_path(
             'incorrect_areaSource.xml', DATA_DIR)
         self.schema = get_data_path('nrml.xsd', SCHEMA_DIR)
+
         self.area_source_reader = NRMLReader(self.area_source_nrml,
                 self.schema)
         self.simple_fault_reader = NRMLReader(self.simple_fault_nrml,
                 self.schema)
+        self.complex_fault_reader = NRMLReader(self.complex_fault_nrml,
+                self.schema)
+
         self.gen_as = self.area_source_reader.read().next()
         self.gen_sf = self.simple_fault_reader.read().next()
+        self.gen_cf = self.complex_fault_reader.read().next()
 
     def test_incorrect_sm_filename_raise_exception(self):
         self.assertRaises(IOError, NRMLReader, FILE_NAME_ERROR,
@@ -181,3 +188,25 @@ class NRMLReaderTestCase(unittest.TestCase):
                 'upper_seismogenic_depth'))
         self.assertEqual(lower_seismogenic_depth, geo.get(
                 'lower_seismogenic_depth'))
+
+    def test_cf_simple_attrib(self):
+        sm_id = 'sm1'
+        type_sm = 'complex_fault'
+        cf_id = 'src_cascadia.mid.8387z.in'
+        cf_name = 'Cascadia Megathrust'
+        cf_tectonic_region = 'Subduction Interface'
+        cf_rake = 90.0
+
+        self.assertEqual(sm_id, self.gen_cf.get('id_sm'))
+        self.assertEqual(type_sm, self.gen_cf.get('type'))
+        self.assertEqual(cf_id, self.gen_cf.get('id_cf'))
+        self.assertEqual(cf_name, self.gen_cf.get('name'))
+        self.assertEqual(cf_tectonic_region,
+                self.gen_cf.get('tectonic_region'))
+        self.assertEqual(cf_rake, self.gen_cf.get('rake'))
+
+
+
+
+
+

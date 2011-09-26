@@ -69,6 +69,12 @@ SIMPLE_FAULT_GEOMETRY = "%ssimpleFaultGeometry" % NRML
 UPPER_SEISMOGENIC_DEPTH = "%supperSeismogenicDepth" % NRML
 LOWER_SEISMOGENIC_DEPTH = "%slowerSeismogenicDepth" % NRML
 
+COMPLEX_FAULT_SOURCE = "%scomplexFaultSource" % NRML
+EVENLY_DISCRETIZED_INC_MFD = "%sevenlyDiscretizedIncrementalMFD" % NRML
+BIN_SIZE = "binSize"
+MIN_VAL = "minVal"
+FAULT_TOP_EDGE = "%sfaultTopEdge" % NRML
+FAULT_BOTTOM_EDGE = "%sfaultBottomEdge" % NRML
 
 
 class XMLValidationError(Exception):
