@@ -55,14 +55,21 @@ class NRMLReader(object):
         """
 
         with open(self.filename, 'rb') as nrml_file:
-            for source_model in etree.iterparse(nrml_file,
-                tag=xml_utils.AREA_SOURCE):
+            for source_model in etree.iterparse(nrml_file):
+                
                 if source_model[XML_NODE].tag == xml_utils.AREA_SOURCE:
                     source_model_id = source_model[XML_NODE].getparent().get(
-                        xml_utils.SOURCE_MODEL_ID_ATTR)
+                        xml_utils.GML_ID)
                     source = self._parse_area_source(source_model_id,
                             source_model[XML_NODE])
-                yield source
+                    yield source
+
+                elif source_model[XML_NODE].tag == xml_utils.SIMPLE_FAULT_SOURCE:
+                    source_model_id = source_model[XML_NODE].getparent().get(
+                        xml_utils.GML_ID)
+                    source = self._parse_simple_fault(source_model_id,
+                            source_model[XML_NODE])        
+                    yield source
 
     def _parse_area_source(self, source_model_id, source_model):
         """
@@ -90,11 +97,11 @@ class NRMLReader(object):
         area_source = {'type': 'area_source'}
         area_source['id_sm'] = source_model_id
 
-        as_id = source_model.get(xml_utils.AREA_SOURCE_ID)
-        area_source['id_as'] = as_id
-
-        as_name = source_model.find(xml_utils.GML_NAME).text
-        area_source['name'] = as_name
+        area_source['id_as'] = source_model.get(
+            xml_utils.GML_ID)
+ 
+        area_source['name'] = source_model.find(
+            xml_utils.GML_NAME).text
 
         area_source['tectonic_region'] = source_model.find(
             xml_utils.TECTONIC_REGION).text
@@ -140,7 +147,7 @@ class NRMLReader(object):
 
         focal_mechanism = {'name': 'focal_mechanism'}
 
-        focal_mechanism['id'] = rupture_rate_model.find('.//%s' %
+        focal_mechanism['id'] = rupture_rate_model.find(
                 xml_utils.FOCAL_MECHANISM).get(xml_utils.FM_ID_ATTR)
 
         nodal_plane_elems = rupture_rate_model.find('.//%s' %
@@ -152,13 +159,13 @@ class NRMLReader(object):
 
             nodal_plane_read['id'] = child
 
-            nodal_plane_read['strike'] = float(nodal_plane_elem.find('.//%s' %
+            nodal_plane_read['strike'] = float(nodal_plane_elem.find(
                     xml_utils.NODAL_PLANE_STRIKE).getchildren()[0].text)
 
-            nodal_plane_read['dip'] = float(nodal_plane_elem.find('.//%s' %
+            nodal_plane_read['dip'] = float(nodal_plane_elem.find(
                     xml_utils.NODAL_PLANE_DIP).getchildren()[0].text)
 
-            nodal_plane_read['rake'] = float(nodal_plane_elem.find('.//%s' %
+            nodal_plane_read['rake'] = float(nodal_plane_elem.find(
                     xml_utils.NODAL_PLANE_RAKE).getchildren()[0].text)
 
             nodal_planes.append(nodal_plane_read)
@@ -175,25 +182,10 @@ class NRMLReader(object):
         """
 
         rupture_rate_model_read = []
-        truncated_guten_richter = {'name': 'truncated_guten_richter'}
 
-        truncated_guten_richter['a_value_cumulative'] = float(
-            rupture_rate_model.find('.//%s' %
-                xml_utils.A_VALUE_CUMULATIVE).text)
-
-        truncated_guten_richter['b_value'] = float(
-            rupture_rate_model.find('.//%s' %
-                xml_utils.B_VALUE).text)
-
-        truncated_guten_richter['min_magnitude'] = float(
-            rupture_rate_model.find('.//%s' %
-                xml_utils.MIN_MAGNITUDE).text)
-
-        truncated_guten_richter['max_magnitude'] = float(
-            rupture_rate_model.find('.//%s' %
-                xml_utils.MAX_MAGNITUDE).text)
-
-        rupture_rate_model_read.append(truncated_guten_richter)
+        rupture_rate_model_read.append(
+            self._parse_truncated_guten_richter(rupture_rate_model.find(
+            xml_utils.TRUNCATED_GUTEN_RICHTER)))
 
         focal_mechanism = self._parse_rrm_focal_mecanism(rupture_rate_model)
         rupture_rate_model.clear()
@@ -208,9 +200,9 @@ class NRMLReader(object):
         """
 
         rupture_depth_distrib_read = {}
-        magnitude = float(rupture_depth_distrib.find('.//%s' %
+        magnitude = float(rupture_depth_distrib.find(
                 xml_utils.MAGNITUDE).text)
-        depth = float(rupture_depth_distrib.find('.//%s' %
+        depth = float(rupture_depth_distrib.find(
                 xml_utils.DEPTH).text)
         rupture_depth_distrib.clear()
 
@@ -218,3 +210,73 @@ class NRMLReader(object):
         rupture_depth_distrib_read['magnitude'] = magnitude
         rupture_depth_distrib_read['depth'] = depth
         return rupture_depth_distrib_read
+
+    def _parse_truncated_guten_richter(self, tgr_node):
+        truncated_guten_richter = {'name': 'truncated_guten_richter'}
+
+        truncated_guten_richter['a_value_cumulative'] = float(
+            tgr_node.find(xml_utils.A_VALUE_CUMULATIVE).text)
+
+        truncated_guten_richter['b_value'] = float(
+            tgr_node.find(xml_utils.B_VALUE).text)
+
+        truncated_guten_richter['min_magnitude'] = float(
+            tgr_node.find(xml_utils.MIN_MAGNITUDE).text)
+
+        truncated_guten_richter['max_magnitude'] = float(
+            tgr_node.find(xml_utils.MAX_MAGNITUDE).text)
+        return truncated_guten_richter
+
+    def _parse_simple_fault(self, source_model_id, source_model):
+        simple_fault = {'type': 'simple_fault'}
+
+        simple_fault['id_sm'] = source_model_id
+
+        simple_fault['id_sf'] = source_model.get(xml_utils.GML_ID)
+
+        simple_fault['name'] = source_model.find(
+            xml_utils.GML_NAME).text
+
+        simple_fault['tectonic_region'] = source_model.find(
+            xml_utils.TECTONIC_REGION).text
+
+        simple_fault['rake'] = float(source_model.find(
+            xml_utils.RAKE).text)
+        
+        simple_fault['truncated_guten_richter'] = \
+            self._parse_truncated_guten_richter(source_model.find(
+                    xml_utils.TRUNCATED_GUTEN_RICHTER))
+        
+        simple_fault['geometry'] = \
+            self._parse_simple_fault_geometry(source_model.find(
+                    xml_utils.SIMPLE_FAULT_GEOMETRY))
+
+        source_model.clear()
+        return simple_fault
+
+    def _parse_simple_fault_geometry(self, sf_geometry):
+        geometry = {'name': 'geometry'}
+        geometry['id'] = sf_geometry.get(
+            xml_utils.GML_ID)
+
+        pos_list = sf_geometry.find('.//%s' %
+            xml_utils.A_BOUNDARY_POS_LIST).text.split()
+        geometry['fault_trace_pos_list'] = \
+            [((float(pos_list[i])), 
+            float(pos_list[i + 1]), float(pos_list[i + 2]))
+                for i in xrange(0, len(pos_list), 3)]
+ 
+        geometry['dip'] = float(sf_geometry.find(
+            xml_utils.DIP).text)
+
+        geometry['upper_seismogenic_depth'] = float(sf_geometry.find(
+            xml_utils.UPPER_SEISMOGENIC_DEPTH).text)
+
+        geometry['lower_seismogenic_depth'] = float(sf_geometry.find(
+            xml_utils.LOWER_SEISMOGENIC_DEPTH).text)
+        sf_geometry.clear() 
+        return geometry
+        
+            
+
+

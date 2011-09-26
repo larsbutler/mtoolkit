@@ -36,14 +36,15 @@ QUAKEML = "{%s}" % QUAKEML_NS
 NSMAP = {None: NRML_NS, "gml": GML_NS}
 NSMAP_WITH_QUAKEML = {None: NRML_NS, "gml": GML_NS, "qml": QUAKEML_NS}
 
-SOURCE_MODEL_ID_ATTR = "%sid" % GML
 AREA_SOURCE = "%sareaSource" % NRML
-AREA_SOURCE_ID = "%sid" % GML
+GML_ID = "%sid" % GML
 GML_NAME = "%sname" % GML
 TECTONIC_REGION = "%stectonicRegion" % NRML
 
 AREA_BOUNDARY = "%sareaBoundary" % NRML
 A_BOUNDARY_POS_LIST = "%sposList" % GML
+
+TRUNCATED_GUTEN_RICHTER = "%struncatedGutenbergRichter" % NRML
 
 RUPTURE_RATE_MODEL = "%sruptureRateModel" % NRML
 A_VALUE_CUMULATIVE = "%saValueCumulative" % NRML
@@ -62,6 +63,15 @@ MAGNITUDE = "%smagnitude" % NRML
 DEPTH = "%sdepth" % NRML
 
 HYPOCENTRAL_DEPTH = "%shypocentralDepth" % NRML
+
+
+SIMPLE_FAULT_SOURCE = "%ssimpleFaultSource" % NRML
+RAKE = "%srake" % NRML
+DIP = "%sdip" % NRML
+SIMPLE_FAULT_GEOMETRY = "%ssimpleFaultGeometry" % NRML
+UPPER_SEISMOGENIC_DEPTH = "%supperSeismogenicDepth" % NRML
+LOWER_SEISMOGENIC_DEPTH = "%slowerSeismogenicDepth" % NRML
+
 
 
 class XMLValidationError(Exception):
