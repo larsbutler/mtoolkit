@@ -48,7 +48,8 @@ class NRMLReader(object):
                'The source model does not conform to the schema')
         self.filename = filename
         self.tag_action = {xml_utils.AREA_SOURCE: self._parse_area_source,
-            xml_utils.SIMPLE_FAULT_SOURCE: self._parse_simple_fault}
+            xml_utils.SIMPLE_FAULT_SOURCE: self._parse_simple_fault,
+            xml_utils.COMPLEX_FAULT_SOURCE: self._parse_complex_fault}
 
     def read(self):
         """
@@ -87,8 +88,8 @@ class NRMLReader(object):
         """
 
         area_source = {'type': 'area_source'}
-        area_source['id_sm'] = source_model.getparent()\
-                .get(xml_utils.GML_ID)
+        area_source['id_sm'] = source_model.getparent().get(
+            xml_utils.GML_ID)
 
         area_source['id_as'] = source_model.get(
             xml_utils.GML_ID)
@@ -205,7 +206,7 @@ class NRMLReader(object):
     def _parse_truncated_guten_richter(self, tgr_node):
         """
         Return a dict structure which contains truncated
-        gutenberg richter data
+        gutenberg richter data.
         """
 
         truncated_guten_richter = {'name': 'truncated_guten_richter'}
@@ -230,8 +231,7 @@ class NRMLReader(object):
         Return a complex dict data structure representing
         the parsed simple fault source model, the dict data
         structure also contains other dicts such as:
-        truncated_guten_richter and geometry
-
+        truncated_guten_richter and geometry.
         Simple Fault source (sf) complete dict structure description:
             type    - source model type
             id_sm   - source model id
@@ -245,8 +245,8 @@ class NRMLReader(object):
 
         simple_fault = {'type': 'simple_fault'}
 
-        simple_fault['id_sm'] = source_model.getparent()\
-                .get(xml_utils.GML_ID)
+        simple_fault['id_sm'] = source_model.getparent().get(
+            xml_utils.GML_ID)
 
         simple_fault['id_sf'] = source_model.get(xml_utils.GML_ID)
 
@@ -298,3 +298,81 @@ class NRMLReader(object):
 
         sf_geometry.clear()
         return geometry
+
+    def _parse_complex_fault(self, source_model):
+        """
+        Return a complex dict data structure representing
+        the parsed complex fault source model, the dict data
+        structure also contains three lists such as:
+        evenly_discretized_inc_MFD, fault_bottom_edge,
+        fault_bottom_edge.
+        Complex Fault source (cf) complete dict structure description:
+            type    - source model type
+            id_sm   - source model id
+            id_cf   - complex fault id
+            name    - complex fault name
+            tectonic_region - simple complex tectonic region
+            rake    - complex fault rake
+            bin_size - complex fault bin size
+            min_val - complex fault min val
+            evenly_discretized_inc_MFD = [(magnitude, activity_rate)]
+            fault_bottom_edge =[(long, latit, depth)]
+            fault_top_edge = [(long, latit, depth)]
+        """
+
+        complex_fault = {'type': 'complex_fault'}
+
+        complex_fault['id_sm'] = source_model.getparent().get(
+            xml_utils.GML_ID)
+
+        complex_fault['id_cf'] = source_model.get(xml_utils.GML_ID)
+
+        complex_fault['name'] = source_model.find(
+            xml_utils.GML_NAME).text
+
+        complex_fault['tectonic_region'] = source_model.find(
+            xml_utils.TECTONIC_REGION).text
+
+        complex_fault['rake'] = float(source_model.find(
+            xml_utils.RAKE).text)
+
+        bin_size = float(source_model.find(
+            xml_utils.EVENLY_DISCRETIZED_INC_MFD).get(xml_utils.BIN_SIZE))
+        min_val = float(source_model.find(
+            xml_utils.EVENLY_DISCRETIZED_INC_MFD).get(xml_utils.MIN_VAL))
+        elist = source_model.find(
+            xml_utils.EVENLY_DISCRETIZED_INC_MFD).text.split()
+
+        complex_fault['bin_size'] = bin_size
+
+        complex_fault['min_val'] = min_val
+        values = [round(x * bin_size + min_val, 1)
+                for x in xrange(0, len(elist))]
+        complex_fault['evenly_discretized_inc_MFD'] = \
+                zip(values, map(float, elist))
+
+        complex_fault['fault_bottom_edge'], complex_fault['fault_top_edge'] = \
+            self._parse_complex_fault_geometry(source_model.find(
+                xml_utils.COMPLEX_FAULT_GEOMETRY))
+
+        return complex_fault
+
+    def _parse_complex_fault_geometry(self, cf_geometry):
+        """
+        Return two lists which contain fault bottom and top
+        edge data.
+        """
+        fbe_list = cf_geometry.find('.//%s' %
+            xml_utils.FAULT_BOTTOM_EDGE).find('.//%s' %
+            xml_utils.POS_LIST).text.split()
+        fte_list = cf_geometry.find('.//%s' %
+            xml_utils.FAULT_TOP_EDGE).find('.//%s' %
+            xml_utils.POS_LIST).text.split()
+
+        fault_bottom_edge = [(float(fbe_list[i]), float(fbe_list[i + 1]),
+                float(fbe_list[i + 2])) for i in xrange(0, len(fbe_list), 3)]
+
+        fault_top_edge = [(float(fte_list[i]), float(fte_list[i + 1]),
+                float(fte_list[i + 2])) for i in xrange(0, len(fte_list), 3)]
+
+        return fault_bottom_edge, fault_top_edge
