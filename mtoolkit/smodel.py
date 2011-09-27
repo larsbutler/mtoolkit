@@ -324,5 +324,37 @@ class NRMLReader(object):
 
         complex_fault['rake'] = float(source_model.find(
             xml_utils.RAKE).text)
+
+        bin_size = float(source_model.find(
+            xml_utils.EVENLY_DISCRETIZED_INC_MFD).get(xml_utils.BIN_SIZE))
+        min_val = float(source_model.find(
+            xml_utils.EVENLY_DISCRETIZED_INC_MFD).get(xml_utils.MIN_VAL))
+        elist = source_model.find(
+            xml_utils.EVENLY_DISCRETIZED_INC_MFD).text.split()
         
+        complex_fault['bin_size'] = bin_size
+
+        complex_fault['min_val'] = min_val
+        values = [round(x * bin_size + min_val, 1)
+                for x in xrange(0, len(elist))] 
+        complex_fault['evenly_discretized_inc_MFD'] = \
+                zip(values, map(float, elist))
+        
+
+        fbe_list = source_model.find('.//%s' %
+            xml_utils.FAULT_BOTTOM_EDGE).find('.//%s' % 
+            xml_utils.POS_LIST).text.split()
+        fte_list = source_model.find('.//%s' %
+            xml_utils.FAULT_TOP_EDGE).find('.//%s' %
+            xml_utils.POS_LIST).text.split()
+
+        fault_bottom_edge =  [(float(fbe_list[i]), float(fbe_list[i+1]),
+                float(fbe_list[i+2])) for i in xrange(0, len(fbe_list), 3)]
+
+        fault_top_edge = [(float(fte_list[i]), float(fte_list[i+1]),
+                float(fte_list[i+2])) for i in xrange(0, len(fte_list), 3)]
+        
+        complex_fault['fault_bottom_edge'] = fault_bottom_edge
+        complex_fault['fault_top_edge'] = fault_top_edge
+         
         return complex_fault
