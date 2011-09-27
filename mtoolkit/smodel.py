@@ -61,12 +61,9 @@ class NRMLReader(object):
             for source_model in etree.iterparse(nrml_file):
                 tag = source_model[XML_NODE].tag
                 if tag in self.tag_action:
-                    source_model_id = source_model[XML_NODE].getparent().get(
-                            xml_utils.GML_ID)
-                    yield self.tag_action[tag](source_model_id,
-                            source_model[XML_NODE])
+                    yield self.tag_action[tag](source_model[XML_NODE])
 
-    def _parse_area_source(self, source_model_id, source_model):
+    def _parse_area_source(self, source_model):
         """
         Return a complex dict data structure representing
         the parsed area source model, the dict data structure
@@ -91,7 +88,8 @@ class NRMLReader(object):
         """
 
         area_source = {'type': 'area_source'}
-        area_source['id_sm'] = source_model_id
+        area_source['id_sm'] = source_model.getparent()\
+                .get(xml_utils.GML_ID)
 
         area_source['id_as'] = source_model.get(
             xml_utils.GML_ID)
@@ -149,8 +147,7 @@ class NRMLReader(object):
         nodal_plane_elems = rupture_rate_model.find('.//%s' %
                 xml_utils.NODAL_PLANES)
         nodal_planes = []
-        child = 0
-        for nodal_plane_elem in nodal_plane_elems:
+        for child, nodal_plane_elem in enumerate(nodal_plane_elems):
             nodal_plane_read = {}
 
             nodal_plane_read['id'] = child
@@ -165,7 +162,6 @@ class NRMLReader(object):
                     xml_utils.NODAL_PLANE_RAKE).getchildren()[0].text)
 
             nodal_planes.append(nodal_plane_read)
-            child += 1
         nodal_plane_elems.clear()
 
         focal_mechanism['nodal_planes'] = nodal_planes
@@ -230,7 +226,7 @@ class NRMLReader(object):
         tgr_node.clear()
         return truncated_guten_richter
 
-    def _parse_simple_fault(self, source_model_id, source_model):
+    def _parse_simple_fault(self, source_model):
         """
         Return a complex dict data structure representing
         the parsed simple fault source model, the dict data
@@ -250,7 +246,8 @@ class NRMLReader(object):
 
         simple_fault = {'type': 'simple_fault'}
 
-        simple_fault['id_sm'] = source_model_id
+        simple_fault['id_sm'] = source_model.getparent()\
+                .get(xml_utils.GML_ID)
 
         simple_fault['id_sf'] = source_model.get(xml_utils.GML_ID)
 
