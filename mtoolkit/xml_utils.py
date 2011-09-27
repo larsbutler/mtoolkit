@@ -73,6 +73,7 @@ COMPLEX_FAULT_SOURCE = "%scomplexFaultSource" % NRML
 EVENLY_DISCRETIZED_INC_MFD = "%sevenlyDiscretizedIncrementalMFD" % NRML
 BIN_SIZE = "binSize"
 MIN_VAL = "minVal"
+COMPLEX_FAULT_GEOMETRY = "%scomplexFaultGeometry" % NRML
 FAULT_TOP_EDGE = "%sfaultTopEdge" % NRML
 FAULT_BOTTOM_EDGE = "%sfaultBottomEdge" % NRML
 
