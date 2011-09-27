@@ -214,7 +214,7 @@ class NRMLReaderTestCase(unittest.TestCase):
         self.assertEqual(cf_min_val, self.gen_cf.get('min_val'))
         self.assertEqual(cf_complex, self.gen_cf.get(
                 'evenly_discretized_inc_MFD'))
-   
+
     def test_cf_geometry(self):
         fault_bottom_edge = [(-124.0415, 40.347, 15.55),
             (-124.33, 41.214000000000006, 13.46),
@@ -250,5 +250,6 @@ class NRMLReaderTestCase(unittest.TestCase):
             (-127.037, 48.711, 4.58367),
             (-127.605, 49.279, 4.76158)]
 
-        self.assertEqual(fault_bottom_edge, self.gen_cf.get('fault_bottom_edge'))
+        self.assertEqual(fault_bottom_edge,
+                self.gen_cf.get('fault_bottom_edge'))
         self.assertEqual(fault_top_edge, self.gen_cf.get('fault_top_edge'))
