@@ -88,8 +88,8 @@ class NRMLReader(object):
         """
 
         area_source = {'type': 'area_source'}
-        area_source['id_sm'] = source_model.getparent()\
-                .get(xml_utils.GML_ID)
+        area_source['id_sm'] = source_model.getparent().get(
+            xml_utils.GML_ID)
 
         area_source['id_as'] = source_model.get(
             xml_utils.GML_ID)
@@ -245,8 +245,8 @@ class NRMLReader(object):
 
         simple_fault = {'type': 'simple_fault'}
 
-        simple_fault['id_sm'] = source_model.getparent()\
-                .get(xml_utils.GML_ID)
+        simple_fault['id_sm'] = source_model.getparent().get(
+            xml_utils.GML_ID)
 
         simple_fault['id_sf'] = source_model.get(xml_utils.GML_ID)
 
@@ -322,8 +322,8 @@ class NRMLReader(object):
 
         complex_fault = {'type': 'complex_fault'}
 
-        complex_fault['id_sm'] = source_model.getparent()\
-                .get(xml_utils.GML_ID)
+        complex_fault['id_sm'] = source_model.getparent().get(
+            xml_utils.GML_ID)
 
         complex_fault['id_cf'] = source_model.get(xml_utils.GML_ID)
 
