@@ -362,6 +362,7 @@ class NRMLReader(object):
         Return two lists which contain fault bottom and top
         edge data.
         """
+
         fbe_list = cf_geometry.find('.//%s' %
             xml_utils.FAULT_BOTTOM_EDGE).find('.//%s' %
             xml_utils.POS_LIST).text.split()
@@ -376,3 +377,36 @@ class NRMLReader(object):
                 float(fte_list[i + 2])) for i in xrange(0, len(fte_list), 3)]
 
         return fault_bottom_edge, fault_top_edge
+
+    def _parse_simple_point(self, source_model):
+        """
+        Return a complex dict data structure representing
+        the parsed simple point source model, the dict data
+        structure also contains two dicts such as:
+        rupture_rate_model and rupture_depth_distribution.
+        Simple point source (sp) complete dict structure description:
+            type    - source model type
+            id_sm   - source model id
+            id_sp   - simple point id
+            tectonic_region - simple point tectonic region
+            location - simple point location
+            rupture_rate_model=
+                [   {evenly_discretized_inc_mfd},
+                    {focal_mechanism: [nodal_planes]
+                        where each nodal plane is {} }
+                ]
+            {rupture_depth_distribution}
+            hypocentral_depth - simple point hypocentral depth
+        """
+        simple_point = {'type': 'simple_point'}
+
+        simple_point['id_sm'] = source_model.getparent().get(
+            xml_utils.GML_ID)
+    
+        simple_point['id_sp'] = source_model.get(xml_utils.GML_ID)
+
+        simple_point['tectonic_region'] = source_model.find(
+            xml_utils.TECTONIC_REGION).text
+
+        simple_point['location'] = [float(x) for x in
+            source_model.find('.//%s' % xml_utils.POS).text.split()]

@@ -35,6 +35,8 @@ class NRMLReaderTestCase(unittest.TestCase):
             'simpleFaultModel.xml', DATA_DIR)
         self.complex_fault_nrml = get_data_path(
             'cascadia_complex_source.xml', DATA_DIR)
+        self.simple_point_nrml = get_data_path(
+            'simple_pointsource_model.xml', DATA_DIR)
         self.incorrect_nrml = get_data_path(
             'incorrect_areaSource.xml', DATA_DIR)
         self.schema = get_data_path('nrml.xsd', SCHEMA_DIR)
@@ -45,10 +47,13 @@ class NRMLReaderTestCase(unittest.TestCase):
                 self.schema)
         self.complex_fault_reader = NRMLReader(self.complex_fault_nrml,
                 self.schema)
+        #self.simple_point_reader = NRMLReader(self.simple_point_nrml,
+        #        self.schema)
 
         self.gen_as = self.area_source_reader.read().next()
         self.gen_sf = self.simple_fault_reader.read().next()
         self.gen_cf = self.complex_fault_reader.read().next()
+        #self.gen_sp = self.simple_point_reader.read().next()
 
     def test_incorrect_sm_filename_raise_exception(self):
         self.assertRaises(IOError, NRMLReader, FILE_NAME_ERROR,
@@ -253,3 +258,82 @@ class NRMLReaderTestCase(unittest.TestCase):
         self.assertEqual(fault_bottom_edge,
                 self.gen_cf.get('fault_bottom_edge'))
         self.assertEqual(fault_top_edge, self.gen_cf.get('fault_top_edge'))
+    
+    @unittest.skip
+    def test_sp_simple_attrib(self):
+        sm_id = 'sm1'
+        sm_type = 'simple_point'
+        sp_id = '_100'
+        sp_tectonic_region = 'Active Shallow Crust'
+        sp_pos = [85.05, 15.85]
+        sp_hypocentral_depth = 5.0
+        
+        self.assertEqual(sm_id, self.gen_sp.get('id_sm'))
+        self.assertEqual(sm_type, self.gen_sp.get('type'))
+        self.assertEqual(sp_id, self.gen_sp.get('id_sp'))
+        self.assertEqual(sp_tectonic_region, self.gen_sp.get(
+                'tectonic_region'))
+        self.assertEqual(sp_pos, self.gen_sp.get('pos'))
+        self.assertEqual(sp_hypocentral_depth, self.gen_sp.get(
+                'hypocentral_depth'))
+
+    @unittest.skip
+    def test_sp_rrm_evenly_discretized_inc_mfd(self):
+        rrm_ed_inc_mfd = self.gen_sp.get('rupture_rate_model')[0]
+        name = 'evenly_discretized_inc_MFD'
+        bin_size = 0.1
+        min_val = 4.0
+        evenly_discr_inc_mfd = [1.2825e-10, 1.0187e-10, 8.0922e-11,
+                                    6.4278e-11, 5.1058e-11, 4.0557e-11,
+                                    3.2215e-11, 2.559e-11, 2.0327e-11,
+                                    1.6146e-11, 1.2825e-11, 1.0187e-11,
+                                    8.0922e-12, 6.4278e-12, 5.1058e-12,
+                                    4.0557e-12, 3.2215e-12, 2.559e-12,
+                                    2.0327e-12, 1.6146e-12, 1.2825e-12,
+                                    1.0187e-12, 8.0922e-13, 6.4278e-13,
+                                    5.1058e-13, 4.0557e-13, 3.2215e-13,
+                                    2.559e-13, 2.0327e-13, 1.6146e-13,
+                                    1.2825e-13, 1.0187e-13, 8.0922e-14,
+                                    6.4278e-14, 5.1058e-14, 4.0557e-14,
+                                    3.2215e-14, 2.559e-14, 2.0327e-14,
+                                    1.6146e-14, 1.2825e-14, 1.0187e-14,
+                                    8.0921e-15, 6.4278e-15, 5.1058e-15,
+                                    4.0557e-15, 3.2215e-15, 2.559e-15,
+                                    2.0327e-15, 1.6146e-15, 1.2825e-15]
+
+        self.assertEqual(name, rrm_ed_inc_mfd.get('name'))
+        self.assertEqual(bin_size, rrm_ed_inc_mfd.get('bin_size'))
+        self.assertEqual(min_val, rrm_ed_inc_mfd.get('min_val'))
+        self.assertEqual(evenly_discr_inc_mfd, rrm_ed_inc_mfd.get(
+                'evenly_disc_inc_mfd'))
+
+
+        
+    @unittest.skip
+    def test_sp_rrm_focal_mechanism(self):
+        rrm_fm = self.gen_sp.get('rupture_rate_model')[1]
+        fm_id = 'fc_0'
+        name = 'focal_mechanism'
+        first_nodal_plane = {'id': 0, 'strike': 0.0,
+                'rake': 0.0, 'dip': 90.0}
+        number_nodal_planes = 1
+
+        self.assertEqual(fm_id, rrm_fm.get('id'))
+        self.assertEqual(name, rrm_fm.get('name'))
+        self.assertEqual(first_nodal_plane,
+                rrm_fm.get('nodal_planes')[0])
+        self.assertEquals(number_nodal_planes,
+                len(rrm_fm.get('nodal_planes')))
+
+        
+        
+    @unittest.skip
+    def test_sp_rdd(self):
+        sp_rdd = self.gen_sp.get('rupture_depth_distribution')
+        name = 'rupture_depth_distrib'
+        depth = 4.0
+        magnitude = 5.0
+
+        self.assertEqual(name, sp_rdd.get('name'))
+        self.assertEqual(depth, sp_rdd.get('depth'))
+        self.assertEqual(magnitude, sp_rdd.get('magnitude'))
