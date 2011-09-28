@@ -82,6 +82,8 @@ class NRMLReaderTestCase(unittest.TestCase):
         as_id = 'src_1'
         as_name = 'Source 8.CH.3'
         as_tectonic_region = 'Active Shallow Crust'
+        as_pos_list = [132.93, 42.85, 134.86, 41.82,
+                129.73, 38.38, 128.15, 40.35]
         as_hypocentral_depth = 15.0
 
         self.assertEqual(sm_id, self.gen_as.get('id_sm'))
@@ -90,16 +92,9 @@ class NRMLReaderTestCase(unittest.TestCase):
         self.assertEqual(as_name, self.gen_as.get('name'))
         self.assertEqual(as_tectonic_region,
                 self.gen_as.get('tectonic_region'))
+        self.assertEquals(as_pos_list, self.gen_as.get('area_boundary'))
         self.assertEqual(as_hypocentral_depth,
                 self.gen_as.get('hypocentral_depth'))
-
-    def test_as_area_boundary(self):
-        pos_list = [(132.93, 42.85), (134.86, 41.82),
-                (129.73, 38.38), (128.15, 40.35)]
-        area_boundary = self.gen_as.get('area_boundary')
-
-        self.assertEquals(pos_list,
-                area_boundary.get('area_boundary_pos_list'))
 
     def test_as_rrm_truncated_gutenberg_richter(self):
         rrm_tgr = self.gen_as.get('rupture_rate_model')[0]

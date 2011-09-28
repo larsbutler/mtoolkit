@@ -67,17 +67,16 @@ class NRMLReader(object):
         """
         Return a complex dict data structure representing
         the parsed area source model, the dict data structure
-        also contains other dicts such as: area_boundary,
-        rupture_depth_distribution and a list which itself
-        contains two dicts: truncated_guten_richter and
-        focal_mechanism.
+        also contains another dict, rupture_depth_distribution
+        and a list which itself contains two dicts: 
+        truncated_guten_richter and focal_mechanism.
         Area source (as) complete dict structure description:
             type    - source model type
             id_sm   - source model id
             id_as   - area source id
             name    - area source name
             tectonic_region - area source tectonic region
-            {area_boundary: [(latitude, longitude)]}
+            area_boundary: [values]
              rupture_rate_model=
                 [   {truncated_guten_richter},
                     {focal_mechanism: [nodal_planes]
@@ -100,8 +99,9 @@ class NRMLReader(object):
         area_source['tectonic_region'] = source_model.find(
             xml_utils.TECTONIC_REGION).text
 
-        area_source['area_boundary'] = self._parse_area_boundary(
-            source_model.find(xml_utils.AREA_BOUNDARY))
+        area_source['area_boundary'] = [float(value) for value in 
+            source_model.find(xml_utils.AREA_BOUNDARY).find('.//%s' %
+                    xml_utils.POS_LIST).text.split()]
 
         area_source['rupture_rate_model'] = self._parse_rupture_rate_model(
             source_model.find(xml_utils.RUPTURE_RATE_MODEL))
@@ -115,93 +115,6 @@ class NRMLReader(object):
 
         source_model.clear()
         return area_source
-
-    def _parse_area_boundary(self, area_boundary):
-        """
-        Return a dict structure which contains
-        area boundary data.
-        """
-
-        pos_list = area_boundary.find('.//%s' %
-                xml_utils.POS_LIST).text.split()
-        pos_couple_list = [((float(pos_list[i])), float(pos_list[i + 1]))
-                for i in xrange(0, len(pos_list), 2)]
-
-        area_boundary.clear()
-        area_boundary_read = {'name': 'area_boundary'}
-
-        area_boundary_read = {'area_boundary_pos_list': pos_couple_list}
-        return area_boundary_read
-
-    def _parse_rrm_focal_mecanism(self, rupture_rate_model):
-        """
-        Return a dict structure which contains
-        focal mechanism data.
-        """
-
-        focal_mechanism = {'name': 'focal_mechanism'}
-
-        focal_mechanism['id'] = rupture_rate_model.find(
-                xml_utils.FOCAL_MECHANISM).get(xml_utils.FM_ID_ATTR)
-
-        nodal_plane_elems = rupture_rate_model.find('.//%s' %
-                xml_utils.NODAL_PLANES)
-        nodal_planes = []
-        for child, nodal_plane_elem in enumerate(nodal_plane_elems):
-            nodal_plane_read = {}
-
-            nodal_plane_read['id'] = child
-
-            nodal_plane_read['strike'] = float(nodal_plane_elem.find(
-                    xml_utils.NODAL_PLANE_STRIKE).getchildren()[0].text)
-
-            nodal_plane_read['dip'] = float(nodal_plane_elem.find(
-                    xml_utils.NODAL_PLANE_DIP).getchildren()[0].text)
-
-            nodal_plane_read['rake'] = float(nodal_plane_elem.find(
-                    xml_utils.NODAL_PLANE_RAKE).getchildren()[0].text)
-
-            nodal_planes.append(nodal_plane_read)
-        nodal_plane_elems.clear()
-
-        focal_mechanism['nodal_planes'] = nodal_planes
-        return focal_mechanism
-
-    def _parse_rupture_rate_model(self, rupture_rate_model):
-        """
-        Return a list which contains two dicts
-        trunctated_guten_richter and focal_mechanism.
-        """
-
-        rupture_rate_model_read = []
-
-        rupture_rate_model_read.append(
-            self._parse_truncated_guten_richter(rupture_rate_model.find(
-            xml_utils.TRUNCATED_GUTEN_RICHTER)))
-
-        focal_mechanism = self._parse_rrm_focal_mecanism(rupture_rate_model)
-        rupture_rate_model.clear()
-
-        rupture_rate_model_read.append(focal_mechanism)
-        return rupture_rate_model_read
-
-    def _parse_rupture_depth_distrib(self, rupture_depth_distrib):
-        """
-        Return a dict structure which contains rupture depth
-        distribuition data.
-        """
-
-        rupture_depth_distrib_read = {}
-        magnitude = float(rupture_depth_distrib.find(
-                xml_utils.MAGNITUDE).text)
-        depth = float(rupture_depth_distrib.find(
-                xml_utils.DEPTH).text)
-        rupture_depth_distrib.clear()
-
-        rupture_depth_distrib_read['name'] = 'rupture_depth_distrib'
-        rupture_depth_distrib_read['magnitude'] = magnitude
-        rupture_depth_distrib_read['depth'] = depth
-        return rupture_depth_distrib_read
 
     def _parse_truncated_guten_richter(self, tgr_node):
         """
@@ -224,7 +137,82 @@ class NRMLReader(object):
             tgr_node.find(xml_utils.MAX_MAGNITUDE).text)
 
         tgr_node.clear()
+
         return truncated_guten_richter
+
+    def _parse_focal_mechanism(self, focal_mechanism_elem):
+        """
+        Return a dict structure which contains
+        focal mechanism data.
+        """
+
+        focal_mechanism = {'name': 'focal_mechanism'}
+
+        focal_mechanism['id'] = focal_mechanism_elem.get(
+            xml_utils.FM_ID_ATTR)
+
+        nodal_plane_elems = focal_mechanism_elem.find(
+                xml_utils.NODAL_PLANES)
+
+        nodal_planes = []
+        for child, nodal_plane_elem in enumerate(nodal_plane_elems):
+            nodal_plane_read = {}
+
+            nodal_plane_read['id'] = child
+
+            nodal_plane_read['strike'] = float(nodal_plane_elem.find(
+                    xml_utils.NODAL_PLANE_STRIKE).getchildren()[0].text)
+
+            nodal_plane_read['dip'] = float(nodal_plane_elem.find(
+                    xml_utils.NODAL_PLANE_DIP).getchildren()[0].text)
+
+            nodal_plane_read['rake'] = float(nodal_plane_elem.find(
+                    xml_utils.NODAL_PLANE_RAKE).getchildren()[0].text)
+
+            nodal_planes.append(nodal_plane_read)
+
+        nodal_plane_elems.clear()
+        focal_mechanism_elem.clear()
+
+        focal_mechanism['nodal_planes'] = nodal_planes
+        
+        return focal_mechanism
+
+    def _parse_rupture_rate_model(self, rupture_rate_model):
+        """
+        Return a list which contains two dicts
+        trunctated_guten_richter and focal_mechanism.
+        """
+
+        rupture_rate_model_read = []
+
+        rupture_rate_model_read.append(
+            self._parse_truncated_guten_richter(rupture_rate_model.find(
+                xml_utils.TRUNCATED_GUTEN_RICHTER)))
+
+        rupture_rate_model_read.append(
+            self._parse_focal_mechanism(rupture_rate_model.find(
+                xml_utils.FOCAL_MECHANISM)))
+
+        rupture_rate_model.clear()
+
+        return rupture_rate_model_read
+
+    def _parse_rupture_depth_distrib(self, rupture_depth_distrib):
+        """
+        Return a dict structure which contains rupture depth
+        distribuition data.
+        """
+
+        rupture_depth_distrib_read = {'name': 'rupture_depth_distrib'}
+        rupture_depth_distrib_read['magnitude'] = float(
+            rupture_depth_distrib.find(xml_utils.MAGNITUDE).text)
+        rupture_depth_distrib_read['depth'] = float(
+            rupture_depth_distrib.find(xml_utils.DEPTH).text)
+
+        rupture_depth_distrib.clear()
+
+        return rupture_depth_distrib_read
 
     def _parse_simple_fault(self, source_model):
         """
