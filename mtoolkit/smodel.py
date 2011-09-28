@@ -292,9 +292,10 @@ class NRMLReader(object):
         """
         Return a complex dict data structure representing
         the parsed complex fault source model, the dict data
-        structure also contains three lists such as:
-        evenly_discretized_inc_MFD, fault_bottom_edge,
-        fault_bottom_edge.
+        structure also contains a dict and a list respectively:
+        evenly_discretized_inc_MFD and complex_fault_geometry
+        which itself contains fault_top_edge and fault_bottom_edge
+        lists.
         Complex Fault source (cf) complete dict structure description:
             type    - source model type
             id_sm   - source model id
@@ -302,11 +303,9 @@ class NRMLReader(object):
             name    - complex fault name
             tectonic_region - simple complex tectonic region
             rake    - complex fault rake
-            bin_size - complex fault bin size
-            min_val - complex fault min val
-            evenly_discretized_inc_MFD = [(magnitude, activity_rate)]
-            fault_bottom_edge =[(long, latit, depth)]
-            fault_top_edge = [(long, latit, depth)]
+            {evenly_discretized_inc_MFD}
+            geometry = 
+                [[fault_top_edge], [fault_bottom_edge]]
         """
 
         complex_fault = {'type': 'complex_fault'}
@@ -324,25 +323,25 @@ class NRMLReader(object):
 
         complex_fault['rake'] = float(source_model.find(
             xml_utils.RAKE).text)
+        
+        complex_fault['evenly_discretized_inc_MFD'] = {
+            'name': 'evenly_discretized_inc_MFD',
 
-        bin_size = float(source_model.find(
-            xml_utils.EVENLY_DISCRETIZED_INC_MFD).get(xml_utils.BIN_SIZE))
-        min_val = float(source_model.find(
-            xml_utils.EVENLY_DISCRETIZED_INC_MFD).get(xml_utils.MIN_VAL))
-        elist = source_model.find(
-            xml_utils.EVENLY_DISCRETIZED_INC_MFD).text.split()
+            'bin_size': float(source_model.find(
+            xml_utils.EVENLY_DISCRETIZED_INC_MFD).get(xml_utils.BIN_SIZE)),
 
-        complex_fault['bin_size'] = bin_size
+            'min_val': float(source_model.find(
+            xml_utils.EVENLY_DISCRETIZED_INC_MFD).get(xml_utils.MIN_VAL)),
+            
+            'values': [float(value) for value in source_model.find(
+            xml_utils.EVENLY_DISCRETIZED_INC_MFD).text.split()]}
 
-        complex_fault['min_val'] = min_val
-        values = [round(x * bin_size + min_val, 1)
-                for x in xrange(0, len(elist))]
-        complex_fault['evenly_discretized_inc_MFD'] = \
-                zip(values, map(float, elist))
+        fault_bottom_edge, fault_top_edge = self._parse_complex_fault_geometry(
+            source_model.find(xml_utils.COMPLEX_FAULT_GEOMETRY))
+        
+        complex_fault['geometry'] = [fault_top_edge, fault_bottom_edge]
 
-        complex_fault['fault_bottom_edge'], complex_fault['fault_top_edge'] = \
-            self._parse_complex_fault_geometry(source_model.find(
-                xml_utils.COMPLEX_FAULT_GEOMETRY))
+        source_model.clear()
 
         return complex_fault
 
@@ -352,20 +351,16 @@ class NRMLReader(object):
         edge data.
         """
 
-        fbe_list = cf_geometry.find('.//%s' %
+        fbe_list = [float(value) for value in cf_geometry.find('.//%s' %
             xml_utils.FAULT_BOTTOM_EDGE).find('.//%s' %
-            xml_utils.POS_LIST).text.split()
-        fte_list = cf_geometry.find('.//%s' %
+            xml_utils.POS_LIST).text.split()]
+        fte_list = [float(value) for value in cf_geometry.find('.//%s' %
             xml_utils.FAULT_TOP_EDGE).find('.//%s' %
-            xml_utils.POS_LIST).text.split()
+            xml_utils.POS_LIST).text.split()]
 
-        fault_bottom_edge = [(float(fbe_list[i]), float(fbe_list[i + 1]),
-                float(fbe_list[i + 2])) for i in xrange(0, len(fbe_list), 3)]
+        cf_geometry.clear()
 
-        fault_top_edge = [(float(fte_list[i]), float(fte_list[i + 1]),
-                float(fte_list[i + 2])) for i in xrange(0, len(fte_list), 3)]
-
-        return fault_bottom_edge, fault_top_edge
+        return fbe_list, fte_list 
 
     def _parse_simple_point(self, source_model):
         """

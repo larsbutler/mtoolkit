@@ -196,13 +196,7 @@ class NRMLReaderTestCase(unittest.TestCase):
         cf_name = 'Cascadia Megathrust'
         cf_tectonic_region = 'Subduction Interface'
         cf_rake = 90.0
-        cf_bin_size = 0.1
-        cf_min_val = 8.3
-        cf_complex = [(8.3, 8.056204131504448e-05),
-            (8.4, 6.828805796045152e-05),
-            (8.5, 5.788407026299047e-05),
-            (8.6, 4.906517611250961e-05)]
-
+        
         self.assertEqual(sm_id, self.gen_cf.get('id_sm'))
         self.assertEqual(type_sm, self.gen_cf.get('type'))
         self.assertEqual(cf_id, self.gen_cf.get('id_cf'))
@@ -210,49 +204,58 @@ class NRMLReaderTestCase(unittest.TestCase):
         self.assertEqual(cf_tectonic_region,
                 self.gen_cf.get('tectonic_region'))
         self.assertEqual(cf_rake, self.gen_cf.get('rake'))
-        self.assertEqual(cf_bin_size, self.gen_cf.get('bin_size'))
-        self.assertEqual(cf_min_val, self.gen_cf.get('min_val'))
-        self.assertEqual(cf_complex, self.gen_cf.get(
-                'evenly_discretized_inc_MFD'))
+        
+    def test_cf_evenly_discretized_inc_mfd(self):
+        edi = self.gen_cf.get('evenly_discretized_inc_MFD')
+        cf_name = 'evenly_discretized_inc_MFD'
+        cf_bin_size = 0.1
+        cf_min_val = 8.3
+        cf_edi_values = [8.056204131504448e-05,
+            6.828805796045152e-05, 5.788407026299047e-05,
+            4.906517611250961e-05]
+        
+        self.assertEqual(cf_name, edi.get('name')) 
+        self.assertEqual(cf_bin_size, edi.get('bin_size'))
+        self.assertEqual(cf_min_val, edi.get('min_val'))
+        self.assertEqual(cf_edi_values, edi.get('values'))
 
     def test_cf_geometry(self):
-        fault_bottom_edge = [(-124.0415, 40.347, 15.55),
-            (-124.33, 41.214000000000006, 13.46),
-            (-124.474, 42.1095, 13.44),
-            (-124.5375, 42.9775, 13.32),
-            (-124.51500000000001, 43.861, 14.19),
-            (-124.4955, 44.737, 14.89),
-            (-124.43400000000001, 45.487, 16.57),
-            (-124.28950000000002, 46.361, 19.0),
-            (-124.169, 46.7745, 20.0),
-            (-124.051, 47.2145, 20.35),
-            (-124.09550000000002, 47.669, 20.1),
-            (-124.5975, 48.0865, 19.47),
-            (-125.19899999999998, 48.416, 19.09),
-            (-125.7345, 48.723, 18.9),
-            (-126.354, 49.111, 18.46),
-            (-127.084, 49.5945, 17.37)]
+        geo = self.gen_cf.get('geometry') 
+        fault_top_edge = [-124.704, 40.363, 5.49326,
+                            -124.977, 41.214000000000006,
+                            4.98856, -125.14, 42.096,
+                            4.89734, -125.21899999999998,
+                            42.965, 4.84761, -125.25700000000002,
+                            43.852, 4.87128, -125.313, 44.718,
+                            4.78242, -125.416, 45.458, 4.41088,
+                            -125.623, 46.33700000000001, 4.02817,
+                            -125.746, 46.642, 3.7974, -125.874,
+                            46.965, 3.64988, -126.015, 47.289,
+                            3.65067, -126.23999999999998, 47.661,
+                            3.67516, -126.422, 47.994, 3.90795,
+                            -126.66000000000001, 48.287, 4.12516,
+                            -127.037, 48.711, 4.58367, -127.605,
+                            49.279, 4.76158]
 
-        fault_top_edge = [(-124.704, 40.363, 5.49326),
-            (-124.977, 41.214000000000006, 4.98856),
-            (-125.14, 42.096, 4.89734),
-            (-125.21899999999998, 42.965, 4.84761),
-            (-125.25700000000002, 43.852, 4.87128),
-            (-125.313, 44.718, 4.78242),
-            (-125.416, 45.458, 4.41088),
-            (-125.623, 46.33700000000001, 4.02817),
-            (-125.746, 46.642, 3.7974),
-            (-125.874, 46.965, 3.64988),
-            (-126.015, 47.289, 3.65067),
-            (-126.23999999999998, 47.661, 3.67516),
-            (-126.422, 47.994, 3.90795),
-            (-126.66000000000001, 48.287, 4.12516),
-            (-127.037, 48.711, 4.58367),
-            (-127.605, 49.279, 4.76158)]
 
-        self.assertEqual(fault_bottom_edge,
-                self.gen_cf.get('fault_bottom_edge'))
-        self.assertEqual(fault_top_edge, self.gen_cf.get('fault_top_edge'))
+        fault_bottom_edge = [-124.0415, 40.347, 15.55, -124.33,
+                            41.214000000000006, 13.46,
+                            -124.474, 42.1095, 13.44, -124.5375,
+                            42.9775, 13.32, -124.51500000000001,
+                            43.861, 14.19, -124.4955, 44.737,
+                            14.89, -124.43400000000001, 45.487,
+                            16.57, -124.28950000000002, 46.361,
+                            19.0, -124.169, 46.7745, 20.0,
+                            -124.051, 47.2145, 20.35,
+                            -124.09550000000002, 47.669, 20.1,
+                            -124.5975, 48.0865, 19.47,
+                            -125.19899999999998, 48.416, 19.09,
+                            -125.7345, 48.723, 18.9, -126.354,
+                            49.111, 18.46, -127.084, 49.5945,
+                            17.37]
+
+        self.assertEqual(fault_bottom_edge, geo[1])
+        self.assertEqual(fault_top_edge, geo[0])
     
     @unittest.skip
     def test_sp_simple_attrib(self):
