@@ -30,15 +30,15 @@ class NRMLReaderTestCase(unittest.TestCase):
 
     def setUp(self):
         self.area_source_nrml = get_data_path(
-            'example_areaSource.xml', DATA_DIR)
+            'area_source_model.xml', DATA_DIR)
         self.simple_fault_nrml = get_data_path(
-            'simpleFaultModel.xml', DATA_DIR)
+            'simple_fault_source_model.xml', DATA_DIR)
         self.complex_fault_nrml = get_data_path(
-            'cascadia_complex_source.xml', DATA_DIR)
+            'complex_source_model.xml', DATA_DIR)
         self.simple_point_nrml = get_data_path(
-            'simple_pointsource_model.xml', DATA_DIR)
+            'simple_point_source_model.xml', DATA_DIR)
         self.incorrect_nrml = get_data_path(
-            'incorrect_areaSource.xml', DATA_DIR)
+            'incorrect_area_source_model.xml', DATA_DIR)
         self.schema = get_data_path('nrml.xsd', SCHEMA_DIR)
 
         self.area_source_reader = NRMLReader(self.area_source_nrml,
