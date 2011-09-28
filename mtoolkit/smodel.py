@@ -114,6 +114,7 @@ class NRMLReader(object):
             xml_utils.HYPOCENTRAL_DEPTH).text)
 
         source_model.clear()
+
         return area_source
 
     def _parse_truncated_guten_richter(self, tgr_node):
@@ -228,7 +229,7 @@ class NRMLReader(object):
             tectonic_region - simple fault tectonic region
             rake    - simple fault rake
             {truncated_guten_richter}
-            {geometry:[(lat, lon, depth)]}
+            {geometry}
         """
 
         simple_fault = {'type': 'simple_fault'}
@@ -256,6 +257,7 @@ class NRMLReader(object):
                     xml_utils.SIMPLE_FAULT_GEOMETRY))
 
         source_model.clear()
+
         return simple_fault
 
     def _parse_simple_fault_geometry(self, sf_geometry):
@@ -265,15 +267,13 @@ class NRMLReader(object):
         """
 
         geometry = {'name': 'geometry'}
-        geometry['id'] = sf_geometry.get(
+
+        geometry['id_geo'] = sf_geometry.get(
             xml_utils.GML_ID)
 
-        pos_list = sf_geometry.find('.//%s' %
-            xml_utils.POS_LIST).text.split()
-        geometry['fault_trace_pos_list'] = \
-            [((float(pos_list[i])),
-            float(pos_list[i + 1]), float(pos_list[i + 2]))
-                for i in xrange(0, len(pos_list), 3)]
+        geometry['fault_trace_pos_list'] = [float(value) for value in
+            sf_geometry.find('.//%s' %
+                    xml_utils.POS_LIST).text.split()]
 
         geometry['dip'] = float(sf_geometry.find(
             xml_utils.DIP).text)
@@ -285,6 +285,7 @@ class NRMLReader(object):
             xml_utils.LOWER_SEISMOGENIC_DEPTH).text)
 
         sf_geometry.clear()
+
         return geometry
 
     def _parse_complex_fault(self, source_model):

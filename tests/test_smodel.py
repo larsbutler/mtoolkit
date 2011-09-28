@@ -169,19 +169,19 @@ class NRMLReaderTestCase(unittest.TestCase):
         geo = self.gen_sf.get('geometry')
         name = 'geometry'
         geo_id = 'sfg_0'
-        pos_list = [(19.5417, 40.0925, 1.0), (19.4654, 40.1496, 1.0), (19.3891,
-                    40.2067, 1.0), (19.297200000000004, 40.2833, 1.0),
-                    (19.2052, 40.3599, 1.0), (19.1299, 40.4443, 1.0),
-                    (19.0545, 40.5286, 1.0), (18.9921, 40.629, 1.0),
-                    (18.9296, 40.7293, 1.0), (18.884, 40.8269, 1.0),
-                    (18.8385, 40.9245, 1.0), (18.8033, 41.0104, 1.0),
-                    (18.7681, 41.09620000000001, 1.0)]
+        pos_list = [19.5417, 40.0925, 1.0, 19.4654, 40.1496, 1.0, 19.3891,
+                    40.2067, 1.0, 19.297200000000004, 40.2833, 1.0,
+                    19.2052, 40.3599, 1.0, 19.1299, 40.4443, 1.0,
+                    19.0545, 40.5286, 1.0, 18.9921, 40.629, 1.0,
+                    18.9296, 40.7293, 1.0, 18.884, 40.8269, 1.0,
+                    18.8385, 40.9245, 1.0, 18.8033, 41.0104, 1.0,
+                    18.7681, 41.09620000000001, 1.0]
         dip = 37.5
         upper_seismogenic_depth = 1.0
         lower_seismogenic_depth = 12.0
 
         self.assertEqual(name, geo.get('name'))
-        self.assertEqual(geo_id, geo.get('id'))
+        self.assertEqual(geo_id, geo.get('id_geo'))
         self.assertEqual(pos_list, geo.get('fault_trace_pos_list'))
         self.assertEqual(dip, geo.get('dip'))
         self.assertEqual(upper_seismogenic_depth, geo.get(
