@@ -79,7 +79,9 @@ FAULT_BOTTOM_EDGE = "%sfaultBottomEdge" % NRML
 
 SIMPLE_POINT_SOURCE = "%spointSource" % NRML
 LOCATION = "%slocation" % NRML
-POS = "%spos" % NRML
+POINT = "%sPoint" % GML
+SRS_NAME = "srsName"
+POS = "%spos" % GML 
 
 
 class XMLValidationError(Exception):

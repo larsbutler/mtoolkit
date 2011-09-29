@@ -47,13 +47,13 @@ class NRMLReaderTestCase(unittest.TestCase):
                 self.schema)
         self.complex_fault_reader = NRMLReader(self.complex_fault_nrml,
                 self.schema)
-        #self.simple_point_reader = NRMLReader(self.simple_point_nrml,
-        #        self.schema)
+        self.simple_point_reader = NRMLReader(self.simple_point_nrml,
+                self.schema)
 
         self.gen_as = self.area_source_reader.read().next()
         self.gen_sf = self.simple_fault_reader.read().next()
         self.gen_cf = self.complex_fault_reader.read().next()
-        #self.gen_sp = self.simple_point_reader.read().next()
+        self.gen_sp = self.simple_point_reader.read().next()
 
     def test_incorrect_sm_filename_raise_exception(self):
         self.assertRaises(IOError, NRMLReader, FILE_NAME_ERROR,
@@ -128,8 +128,8 @@ class NRMLReaderTestCase(unittest.TestCase):
     def test_rupture_depth_distribution(self):
         rdd = self.gen_as.get('rupture_depth_distribution')
         name = 'rupture_depth_distrib'
-        depth = 15.0
-        magnitude = 5.0
+        depth = [15.0]
+        magnitude = [5.0]
 
         self.assertEqual(name, rdd.get('name'))
         self.assertEqual(depth, rdd.get('depth'))
@@ -257,21 +257,29 @@ class NRMLReaderTestCase(unittest.TestCase):
         self.assertEqual(fault_bottom_edge, geo[1])
         self.assertEqual(fault_top_edge, geo[0])
     
-    @unittest.skip
     def test_sp_simple_attrib(self):
         sm_id = 'sm1'
         sm_type = 'simple_point'
-        sp_id = '_100'
+        sp_id = 'src04'
+        sp_name = 'point'
         sp_tectonic_region = 'Active Shallow Crust'
-        sp_pos = [85.05, 15.85]
         sp_hypocentral_depth = 5.0
+
+        sp_location_dict_name = 'location'
+        sp_location_name = 'epsg:4326'
+        sp_location_pos = [-122.0, 38.0]
+        location = self.gen_sp.get('location')
         
         self.assertEqual(sm_id, self.gen_sp.get('id_sm'))
         self.assertEqual(sm_type, self.gen_sp.get('type'))
         self.assertEqual(sp_id, self.gen_sp.get('id_sp'))
+        self.assertEqual(sp_name, self.gen_sp.get('name'))
         self.assertEqual(sp_tectonic_region, self.gen_sp.get(
                 'tectonic_region'))
-        self.assertEqual(sp_pos, self.gen_sp.get('pos'))
+
+        self.assertEqual(sp_location_dict_name, location['name'])
+        self.assertEqual(sp_location_name, location['srs_name'])
+        self.assertEqual(sp_location_pos, location['pos'])
         self.assertEqual(sp_hypocentral_depth, self.gen_sp.get(
                 'hypocentral_depth'))
 

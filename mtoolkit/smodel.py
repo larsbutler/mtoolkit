@@ -49,7 +49,8 @@ class NRMLReader(object):
         self.filename = filename
         self.tag_action = {xml_utils.AREA_SOURCE: self._parse_area_source,
             xml_utils.SIMPLE_FAULT_SOURCE: self._parse_simple_fault,
-            xml_utils.COMPLEX_FAULT_SOURCE: self._parse_complex_fault}
+            xml_utils.COMPLEX_FAULT_SOURCE: self._parse_complex_fault,
+            xml_utils.SIMPLE_POINT_SOURCE: self._parse_simple_point}
 
     def read(self):
         """
@@ -206,10 +207,11 @@ class NRMLReader(object):
         """
 
         rupture_depth_distrib_read = {'name': 'rupture_depth_distrib'}
-        rupture_depth_distrib_read['magnitude'] = float(
-            rupture_depth_distrib.find(xml_utils.MAGNITUDE).text)
-        rupture_depth_distrib_read['depth'] = float(
-            rupture_depth_distrib.find(xml_utils.DEPTH).text)
+        rupture_depth_distrib_read['magnitude'] = [float(value) for value in
+            rupture_depth_distrib.find(xml_utils.MAGNITUDE).text.split()]
+
+        rupture_depth_distrib_read['depth'] = [float(value) for value in
+            rupture_depth_distrib.find(xml_utils.DEPTH).text.split()]
 
         rupture_depth_distrib.clear()
 
@@ -373,7 +375,7 @@ class NRMLReader(object):
             id_sm   - source model id
             id_sp   - simple point id
             tectonic_region - simple point tectonic region
-            location - simple point location
+            {location} - simple point location
             rupture_rate_model=
                 [   {evenly_discretized_inc_mfd},
                     {focal_mechanism: [nodal_planes]
@@ -389,8 +391,27 @@ class NRMLReader(object):
     
         simple_point['id_sp'] = source_model.get(xml_utils.GML_ID)
 
+        simple_point['name'] = source_model.find(
+            xml_utils.GML_NAME).text
+
         simple_point['tectonic_region'] = source_model.find(
             xml_utils.TECTONIC_REGION).text
 
-        simple_point['location'] = [float(x) for x in
-            source_model.find('.//%s' % xml_utils.POS).text.split()]
+        simple_point['location'] = {
+            'name': 'location',
+            'srs_name': source_model.find('.//%s' %
+                xml_utils.POINT).get(xml_utils.SRS_NAME),
+            'pos': [float(x) for x in source_model.find(
+                './/%s' % xml_utils.POS).text.split()]
+        }
+
+        simple_point['rupture_rate_model'] = self._parse_rupture_rate_model(
+            source_model.find(xml_utils.RUPTURE_RATE_MODEL))
+
+        simple_point['rupture_depth_distribution'] = \
+                self._parse_rupture_depth_distrib(
+                    source_model.find(xml_utils.RUPTURE_DEPTH_DISTRIB))
+
+        simple_point['hypocentral_depth'] = float(source_model.find(
+            xml_utils.HYPOCENTRAL_DEPTH).text)
+        return simple_point
