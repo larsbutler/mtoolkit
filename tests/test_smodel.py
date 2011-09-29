@@ -196,7 +196,7 @@ class NRMLReaderTestCase(unittest.TestCase):
         cf_name = 'Cascadia Megathrust'
         cf_tectonic_region = 'Subduction Interface'
         cf_rake = 90.0
-        
+
         self.assertEqual(sm_id, self.gen_cf.get('id_sm'))
         self.assertEqual(type_sm, self.gen_cf.get('type'))
         self.assertEqual(cf_id, self.gen_cf.get('id_cf'))
@@ -204,7 +204,7 @@ class NRMLReaderTestCase(unittest.TestCase):
         self.assertEqual(cf_tectonic_region,
                 self.gen_cf.get('tectonic_region'))
         self.assertEqual(cf_rake, self.gen_cf.get('rake'))
-        
+
     def test_cf_evenly_discretized_inc_mfd(self):
         edi = self.gen_cf.get('evenly_discretized_inc_MFD')
         cf_name = 'evenly_discretized_inc_MFD'
@@ -213,14 +213,14 @@ class NRMLReaderTestCase(unittest.TestCase):
         cf_edi_values = [8.056204131504448e-05,
             6.828805796045152e-05, 5.788407026299047e-05,
             4.906517611250961e-05]
-        
-        self.assertEqual(cf_name, edi.get('name')) 
+
+        self.assertEqual(cf_name, edi.get('name'))
         self.assertEqual(cf_bin_size, edi.get('bin_size'))
         self.assertEqual(cf_min_val, edi.get('min_val'))
         self.assertEqual(cf_edi_values, edi.get('values'))
 
     def test_cf_geometry(self):
-        geo = self.gen_cf.get('geometry') 
+        geo = self.gen_cf.get('geometry')
         fault_top_edge = [-124.704, 40.363, 5.49326,
                             -124.977, 41.214000000000006,
                             4.98856, -125.14, 42.096,
@@ -236,7 +236,6 @@ class NRMLReaderTestCase(unittest.TestCase):
                             -126.66000000000001, 48.287, 4.12516,
                             -127.037, 48.711, 4.58367, -127.605,
                             49.279, 4.76158]
-
 
         fault_bottom_edge = [-124.0415, 40.347, 15.55, -124.33,
                             41.214000000000006, 13.46,
@@ -256,7 +255,7 @@ class NRMLReaderTestCase(unittest.TestCase):
 
         self.assertEqual(fault_bottom_edge, geo[1])
         self.assertEqual(fault_top_edge, geo[0])
-    
+
     def test_sp_simple_attrib(self):
         sm_id = 'sm1'
         sm_type = 'simple_point'
@@ -269,7 +268,7 @@ class NRMLReaderTestCase(unittest.TestCase):
         sp_location_name = 'epsg:4326'
         sp_location_pos = [-122.0, 38.0]
         location = self.gen_sp.get('location')
-        
+
         self.assertEqual(sm_id, self.gen_sp.get('id_sm'))
         self.assertEqual(sm_type, self.gen_sp.get('type'))
         self.assertEqual(sp_id, self.gen_sp.get('id_sp'))
@@ -283,42 +282,23 @@ class NRMLReaderTestCase(unittest.TestCase):
         self.assertEqual(sp_hypocentral_depth, self.gen_sp.get(
                 'hypocentral_depth'))
 
-    @unittest.skip
-    def test_sp_rrm_evenly_discretized_inc_mfd(self):
-        rrm_ed_inc_mfd = self.gen_sp.get('rupture_rate_model')[0]
-        name = 'evenly_discretized_inc_MFD'
-        bin_size = 0.1
-        min_val = 4.0
-        evenly_discr_inc_mfd = [1.2825e-10, 1.0187e-10, 8.0922e-11,
-                                    6.4278e-11, 5.1058e-11, 4.0557e-11,
-                                    3.2215e-11, 2.559e-11, 2.0327e-11,
-                                    1.6146e-11, 1.2825e-11, 1.0187e-11,
-                                    8.0922e-12, 6.4278e-12, 5.1058e-12,
-                                    4.0557e-12, 3.2215e-12, 2.559e-12,
-                                    2.0327e-12, 1.6146e-12, 1.2825e-12,
-                                    1.0187e-12, 8.0922e-13, 6.4278e-13,
-                                    5.1058e-13, 4.0557e-13, 3.2215e-13,
-                                    2.559e-13, 2.0327e-13, 1.6146e-13,
-                                    1.2825e-13, 1.0187e-13, 8.0922e-14,
-                                    6.4278e-14, 5.1058e-14, 4.0557e-14,
-                                    3.2215e-14, 2.559e-14, 2.0327e-14,
-                                    1.6146e-14, 1.2825e-14, 1.0187e-14,
-                                    8.0921e-15, 6.4278e-15, 5.1058e-15,
-                                    4.0557e-15, 3.2215e-15, 2.559e-15,
-                                    2.0327e-15, 1.6146e-15, 1.2825e-15]
+    def test_sp_rrm_truncated_gutenberg_richter(self):
+        tgr = self.gen_sp.get('rupture_rate_model')[0]
+        name = 'truncated_guten_richter'
+        a_value_cumulative = 5.0
+        b_value = 0.8
+        min_magnitude = 5.0
+        max_magnitude = 7.0
 
-        self.assertEqual(name, rrm_ed_inc_mfd.get('name'))
-        self.assertEqual(bin_size, rrm_ed_inc_mfd.get('bin_size'))
-        self.assertEqual(min_val, rrm_ed_inc_mfd.get('min_val'))
-        self.assertEqual(evenly_discr_inc_mfd, rrm_ed_inc_mfd.get(
-                'evenly_disc_inc_mfd'))
+        self.assertEqual(name, tgr.get('name'))
+        self.assertEqual(a_value_cumulative, tgr.get('a_value_cumulative'))
+        self.assertEqual(b_value, tgr.get('b_value'))
+        self.assertEqual(min_magnitude, tgr.get('min_magnitude'))
+        self.assertEqual(max_magnitude, tgr.get('max_magnitude'))
 
-
-        
-    @unittest.skip
     def test_sp_rrm_focal_mechanism(self):
         rrm_fm = self.gen_sp.get('rupture_rate_model')[1]
-        fm_id = 'fc_0'
+        fm_id = 'smi:local/1'
         name = 'focal_mechanism'
         first_nodal_plane = {'id': 0, 'strike': 0.0,
                 'rake': 0.0, 'dip': 90.0}
@@ -331,14 +311,11 @@ class NRMLReaderTestCase(unittest.TestCase):
         self.assertEquals(number_nodal_planes,
                 len(rrm_fm.get('nodal_planes')))
 
-        
-        
-    @unittest.skip
     def test_sp_rdd(self):
         sp_rdd = self.gen_sp.get('rupture_depth_distribution')
         name = 'rupture_depth_distrib'
-        depth = 4.0
-        magnitude = 5.0
+        magnitude = [6.0, 6.5, 7.0]
+        depth = [5.0, 3.0, 0.0]
 
         self.assertEqual(name, sp_rdd.get('name'))
         self.assertEqual(depth, sp_rdd.get('depth'))

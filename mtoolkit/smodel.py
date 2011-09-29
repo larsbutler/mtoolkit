@@ -64,12 +64,12 @@ class NRMLReader(object):
                 if tag in self.tag_action:
                     yield self.tag_action[tag](source_model[XML_NODE])
 
-    def _parse_area_source(self, source_model):
+    def _parse_area_source(self, as_node):
         """
         Return a complex dict data structure representing
         the parsed area source model, the dict data structure
         also contains another dict, rupture_depth_distribution
-        and a list which itself contains two dicts: 
+        and a list which itself contains two dicts:
         truncated_guten_richter and focal_mechanism.
         Area source (as) complete dict structure description:
             type    - source model type
@@ -88,33 +88,33 @@ class NRMLReader(object):
         """
 
         area_source = {'type': 'area_source'}
-        area_source['id_sm'] = source_model.getparent().get(
+        area_source['id_sm'] = as_node.getparent().get(
             xml_utils.GML_ID)
 
-        area_source['id_as'] = source_model.get(
+        area_source['id_as'] = as_node.get(
             xml_utils.GML_ID)
 
-        area_source['name'] = source_model.find(
+        area_source['name'] = as_node.find(
             xml_utils.GML_NAME).text
 
-        area_source['tectonic_region'] = source_model.find(
+        area_source['tectonic_region'] = as_node.find(
             xml_utils.TECTONIC_REGION).text
 
-        area_source['area_boundary'] = [float(value) for value in 
-            source_model.find(xml_utils.AREA_BOUNDARY).find('.//%s' %
+        area_source['area_boundary'] = [float(value) for value in
+            as_node.find(xml_utils.AREA_BOUNDARY).find('.//%s' %
                     xml_utils.POS_LIST).text.split()]
 
         area_source['rupture_rate_model'] = self._parse_rupture_rate_model(
-            source_model.find(xml_utils.RUPTURE_RATE_MODEL))
+            as_node.find(xml_utils.RUPTURE_RATE_MODEL))
 
         area_source['rupture_depth_distribution'] = \
                                 self._parse_rupture_depth_distrib(
-            source_model.find(xml_utils.RUPTURE_DEPTH_DISTRIB))
+            as_node.find(xml_utils.RUPTURE_DEPTH_DISTRIB))
 
-        area_source['hypocentral_depth'] = float(source_model.find(
+        area_source['hypocentral_depth'] = float(as_node.find(
             xml_utils.HYPOCENTRAL_DEPTH).text)
 
-        source_model.clear()
+        as_node.clear()
 
         return area_source
 
@@ -142,7 +142,7 @@ class NRMLReader(object):
 
         return truncated_guten_richter
 
-    def _parse_focal_mechanism(self, focal_mechanism_elem):
+    def _parse_focal_mechanism(self, fm_node):
         """
         Return a dict structure which contains
         focal mechanism data.
@@ -150,14 +150,14 @@ class NRMLReader(object):
 
         focal_mechanism = {'name': 'focal_mechanism'}
 
-        focal_mechanism['id'] = focal_mechanism_elem.get(
+        focal_mechanism['id'] = fm_node.get(
             xml_utils.FM_ID_ATTR)
 
-        nodal_plane_elems = focal_mechanism_elem.find(
+        nodal_plane_nodes = fm_node.find(
                 xml_utils.NODAL_PLANES)
 
         nodal_planes = []
-        for child, nodal_plane_elem in enumerate(nodal_plane_elems):
+        for child, nodal_plane_elem in enumerate(nodal_plane_nodes):
             nodal_plane_read = {}
 
             nodal_plane_read['id'] = child
@@ -173,14 +173,14 @@ class NRMLReader(object):
 
             nodal_planes.append(nodal_plane_read)
 
-        nodal_plane_elems.clear()
-        focal_mechanism_elem.clear()
+        nodal_plane_nodes.clear()
+        fm_node.clear()
 
         focal_mechanism['nodal_planes'] = nodal_planes
-        
+
         return focal_mechanism
 
-    def _parse_rupture_rate_model(self, rupture_rate_model):
+    def _parse_rupture_rate_model(self, rrm_node):
         """
         Return a list which contains two dicts
         trunctated_guten_richter and focal_mechanism.
@@ -189,18 +189,18 @@ class NRMLReader(object):
         rupture_rate_model_read = []
 
         rupture_rate_model_read.append(
-            self._parse_truncated_guten_richter(rupture_rate_model.find(
+            self._parse_truncated_guten_richter(rrm_node.find(
                 xml_utils.TRUNCATED_GUTEN_RICHTER)))
 
         rupture_rate_model_read.append(
-            self._parse_focal_mechanism(rupture_rate_model.find(
+            self._parse_focal_mechanism(rrm_node.find(
                 xml_utils.FOCAL_MECHANISM)))
 
-        rupture_rate_model.clear()
+        rrm_node.clear()
 
         return rupture_rate_model_read
 
-    def _parse_rupture_depth_distrib(self, rupture_depth_distrib):
+    def _parse_rupture_depth_distrib(self, rdd_node):
         """
         Return a dict structure which contains rupture depth
         distribuition data.
@@ -208,16 +208,16 @@ class NRMLReader(object):
 
         rupture_depth_distrib_read = {'name': 'rupture_depth_distrib'}
         rupture_depth_distrib_read['magnitude'] = [float(value) for value in
-            rupture_depth_distrib.find(xml_utils.MAGNITUDE).text.split()]
+            rdd_node.find(xml_utils.MAGNITUDE).text.split()]
 
         rupture_depth_distrib_read['depth'] = [float(value) for value in
-            rupture_depth_distrib.find(xml_utils.DEPTH).text.split()]
+            rdd_node.find(xml_utils.DEPTH).text.split()]
 
-        rupture_depth_distrib.clear()
+        rdd_node.clear()
 
         return rupture_depth_distrib_read
 
-    def _parse_simple_fault(self, source_model):
+    def _parse_simple_fault(self, sf_node):
         """
         Return a complex dict data structure representing
         the parsed simple fault source model, the dict data
@@ -236,33 +236,33 @@ class NRMLReader(object):
 
         simple_fault = {'type': 'simple_fault'}
 
-        simple_fault['id_sm'] = source_model.getparent().get(
+        simple_fault['id_sm'] = sf_node.getparent().get(
             xml_utils.GML_ID)
 
-        simple_fault['id_sf'] = source_model.get(xml_utils.GML_ID)
+        simple_fault['id_sf'] = sf_node.get(xml_utils.GML_ID)
 
-        simple_fault['name'] = source_model.find(
+        simple_fault['name'] = sf_node.find(
             xml_utils.GML_NAME).text
 
-        simple_fault['tectonic_region'] = source_model.find(
+        simple_fault['tectonic_region'] = sf_node.find(
             xml_utils.TECTONIC_REGION).text
 
-        simple_fault['rake'] = float(source_model.find(
+        simple_fault['rake'] = float(sf_node.find(
             xml_utils.RAKE).text)
 
         simple_fault['truncated_guten_richter'] = \
-            self._parse_truncated_guten_richter(source_model.find(
+            self._parse_truncated_guten_richter(sf_node.find(
                     xml_utils.TRUNCATED_GUTEN_RICHTER))
 
         simple_fault['geometry'] = \
-            self._parse_simple_fault_geometry(source_model.find(
+            self._parse_simple_fault_geometry(sf_node.find(
                     xml_utils.SIMPLE_FAULT_GEOMETRY))
 
-        source_model.clear()
+        sf_node.clear()
 
         return simple_fault
 
-    def _parse_simple_fault_geometry(self, sf_geometry):
+    def _parse_simple_fault_geometry(self, geo_node):
         """
         Return a dict structure which contains
         geometry data.
@@ -270,27 +270,27 @@ class NRMLReader(object):
 
         geometry = {'name': 'geometry'}
 
-        geometry['id_geo'] = sf_geometry.get(
+        geometry['id_geo'] = geo_node.get(
             xml_utils.GML_ID)
 
         geometry['fault_trace_pos_list'] = [float(value) for value in
-            sf_geometry.find('.//%s' %
+            geo_node.find('.//%s' %
                     xml_utils.POS_LIST).text.split()]
 
-        geometry['dip'] = float(sf_geometry.find(
+        geometry['dip'] = float(geo_node.find(
             xml_utils.DIP).text)
 
-        geometry['upper_seismogenic_depth'] = float(sf_geometry.find(
+        geometry['upper_seismogenic_depth'] = float(geo_node.find(
             xml_utils.UPPER_SEISMOGENIC_DEPTH).text)
 
-        geometry['lower_seismogenic_depth'] = float(sf_geometry.find(
+        geometry['lower_seismogenic_depth'] = float(geo_node.find(
             xml_utils.LOWER_SEISMOGENIC_DEPTH).text)
 
-        sf_geometry.clear()
+        geo_node.clear()
 
         return geometry
 
-    def _parse_complex_fault(self, source_model):
+    def _parse_complex_fault(self, cf_node):
         """
         Return a complex dict data structure representing
         the parsed complex fault source model, the dict data
@@ -306,65 +306,65 @@ class NRMLReader(object):
             tectonic_region - simple complex tectonic region
             rake    - complex fault rake
             {evenly_discretized_inc_MFD}
-            geometry = 
+            geometry =
                 [[fault_top_edge], [fault_bottom_edge]]
         """
 
         complex_fault = {'type': 'complex_fault'}
 
-        complex_fault['id_sm'] = source_model.getparent().get(
+        complex_fault['id_sm'] = cf_node.getparent().get(
             xml_utils.GML_ID)
 
-        complex_fault['id_cf'] = source_model.get(xml_utils.GML_ID)
+        complex_fault['id_cf'] = cf_node.get(xml_utils.GML_ID)
 
-        complex_fault['name'] = source_model.find(
+        complex_fault['name'] = cf_node.find(
             xml_utils.GML_NAME).text
 
-        complex_fault['tectonic_region'] = source_model.find(
+        complex_fault['tectonic_region'] = cf_node.find(
             xml_utils.TECTONIC_REGION).text
 
-        complex_fault['rake'] = float(source_model.find(
+        complex_fault['rake'] = float(cf_node.find(
             xml_utils.RAKE).text)
-        
+
         complex_fault['evenly_discretized_inc_MFD'] = {
             'name': 'evenly_discretized_inc_MFD',
 
-            'bin_size': float(source_model.find(
+            'bin_size': float(cf_node.find(
             xml_utils.EVENLY_DISCRETIZED_INC_MFD).get(xml_utils.BIN_SIZE)),
 
-            'min_val': float(source_model.find(
+            'min_val': float(cf_node.find(
             xml_utils.EVENLY_DISCRETIZED_INC_MFD).get(xml_utils.MIN_VAL)),
-            
-            'values': [float(value) for value in source_model.find(
+
+            'values': [float(value) for value in cf_node.find(
             xml_utils.EVENLY_DISCRETIZED_INC_MFD).text.split()]}
 
         fault_bottom_edge, fault_top_edge = self._parse_complex_fault_geometry(
-            source_model.find(xml_utils.COMPLEX_FAULT_GEOMETRY))
-        
+            cf_node.find(xml_utils.COMPLEX_FAULT_GEOMETRY))
+
         complex_fault['geometry'] = [fault_top_edge, fault_bottom_edge]
 
-        source_model.clear()
+        cf_node.clear()
 
         return complex_fault
 
-    def _parse_complex_fault_geometry(self, cf_geometry):
+    def _parse_complex_fault_geometry(self, geo_node):
         """
         Return two lists which contain fault bottom and top
         edge data.
         """
 
-        fbe_list = [float(value) for value in cf_geometry.find('.//%s' %
+        fbe_list = [float(value) for value in geo_node.find('.//%s' %
             xml_utils.FAULT_BOTTOM_EDGE).find('.//%s' %
             xml_utils.POS_LIST).text.split()]
-        fte_list = [float(value) for value in cf_geometry.find('.//%s' %
+        fte_list = [float(value) for value in geo_node.find('.//%s' %
             xml_utils.FAULT_TOP_EDGE).find('.//%s' %
             xml_utils.POS_LIST).text.split()]
 
-        cf_geometry.clear()
+        geo_node.clear()
 
-        return fbe_list, fte_list 
+        return fbe_list, fte_list
 
-    def _parse_simple_point(self, source_model):
+    def _parse_simple_point(self, sp_node):
         """
         Return a complex dict data structure representing
         the parsed simple point source model, the dict data
@@ -386,32 +386,35 @@ class NRMLReader(object):
         """
         simple_point = {'type': 'simple_point'}
 
-        simple_point['id_sm'] = source_model.getparent().get(
+        simple_point['id_sm'] = sp_node.getparent().get(
             xml_utils.GML_ID)
-    
-        simple_point['id_sp'] = source_model.get(xml_utils.GML_ID)
 
-        simple_point['name'] = source_model.find(
+        simple_point['id_sp'] = sp_node.get(xml_utils.GML_ID)
+
+        simple_point['name'] = sp_node.find(
             xml_utils.GML_NAME).text
 
-        simple_point['tectonic_region'] = source_model.find(
+        simple_point['tectonic_region'] = sp_node.find(
             xml_utils.TECTONIC_REGION).text
 
         simple_point['location'] = {
             'name': 'location',
-            'srs_name': source_model.find('.//%s' %
+            'srs_name': sp_node.find('.//%s' %
                 xml_utils.POINT).get(xml_utils.SRS_NAME),
-            'pos': [float(x) for x in source_model.find(
+            'pos': [float(x) for x in sp_node.find(
                 './/%s' % xml_utils.POS).text.split()]
         }
 
         simple_point['rupture_rate_model'] = self._parse_rupture_rate_model(
-            source_model.find(xml_utils.RUPTURE_RATE_MODEL))
+            sp_node.find(xml_utils.RUPTURE_RATE_MODEL))
 
         simple_point['rupture_depth_distribution'] = \
                 self._parse_rupture_depth_distrib(
-                    source_model.find(xml_utils.RUPTURE_DEPTH_DISTRIB))
+                    sp_node.find(xml_utils.RUPTURE_DEPTH_DISTRIB))
 
-        simple_point['hypocentral_depth'] = float(source_model.find(
+        simple_point['hypocentral_depth'] = float(sp_node.find(
             xml_utils.HYPOCENTRAL_DEPTH).text)
+
+        sp_node.clear()
+
         return simple_point
