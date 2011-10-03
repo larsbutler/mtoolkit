@@ -38,14 +38,19 @@ class CsvReaderTestCase(unittest.TestCase):
                             'sigmaMw', 'Ms', 'sigmaMs',
                             'mb', 'sigmamb', 'ML',
                             'sigmaML']
-        with open(self.correct_filename) as csvfile:
-            csvfile.readline()  # Skip first line with fieldnames
-            first_data_row = csvfile.readline().strip('\r\n').split(',')
-            second_data_row = csvfile.readline().strip('\r\n').split(',')
-            third_data_row = csvfile.readline().strip('\r\n').split(',')
-        self.eq_entry_1 = dict(zip(self.fieldnames, first_data_row))
-        self.eq_entry_2 = dict(zip(self.fieldnames, second_data_row))
-        self.eq_entry_3 = dict(zip(self.fieldnames, third_data_row))
+        self.first_data_row = [
+        1, 'AAA', 20000102034913,
+        2000, 01, 02,
+        03, 49, 13,
+        0.02, 7.282, 44.368,
+        2.43, 1.01, 298,
+        9.3, 0.5, 1.71,
+        0.355, '', '',
+        '', '', 1.7, 0.1
+        ]
+        self.eq_entry_1 = dict(zip(self.fieldnames, self.first_data_row))
+        #self.eq_entry_2 = dict(zip(self.fieldnames, second_data_row))
+        #self.eq_entry_3 = dict(zip(self.fieldnames, third_data_row))
 
     def test_an_incorrect_csv_filename_raise_exception(self):
         self.assertRaises(IOError, CsvReader, FILE_NAME_ERROR)
@@ -65,7 +70,8 @@ class CsvReaderTestCase(unittest.TestCase):
         Test if the EQ definitions built by CsvReader
         contain proper values.
         """
-        eqcatalog = self.csv_reader.read()
-        self.assertEqual(self.eq_entry_1, eqcatalog.next())
-        self.assertEqual(self.eq_entry_2, eqcatalog.next())
-        self.assertEqual(self.eq_entry_3, eqcatalog.next())
+        eqcatalog = self.csv_reader.read().next()
+        self.assertEqual(self.eq_entry_1, eqcatalog)
+        #self.assertEqual(self.eq_entry_2, eqcatalog.next())
+        #self.assertEqual(self.eq_entry_3, eqcatalog.next())
+
