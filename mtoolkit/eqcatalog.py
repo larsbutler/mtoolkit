@@ -19,8 +19,8 @@
 
 """
 The purpose of this module is to provide objects
-to read EQCatalogs in different formats such as:
-csv, nrml.
+to read csv files containing eq definitions and
+create eq entries.
 """
 
 import os
@@ -31,7 +31,8 @@ import csv
 class CsvReader(object):
     """
     CsvReader allows to read csv file in
-    an iterative way.
+    an iterative way, returning a line
+    for iteration.
     """
 
     def __init__(self, filename):
@@ -58,18 +59,38 @@ class CsvReader(object):
             fieldnames = csv.reader(csv_file).next()
         return fieldnames
 
+
 class EqEntryReader(object):
+    """
+    EqEntryReader allows to read and create
+    eq entries dictionaries in an iterative way.
+    Every read eq entry is composed by a series
+    of attributes which need conversion
+    (int or float) and validation through a
+    series of checks. If a compulsory field
+    can't be converted or doesn't pass
+    it's own check, no eq entry is generated,
+    otherwise if a non compulsory field can't be
+    converted or validated an empty string is
+    placed instead of the incorrect value.
+    """
 
     EMPTY_STRING = ''
 
     def __init__(self, eq_entries_source):
+        """
+        to_int   - fields to be converted in integer
+        to_float - fields to be converted in float
+        check_map - associates each field with its own check
+        """
+
         self.eq_entries_source = eq_entries_source
 
         self.to_int = ['eventID', 'Identifier', 'year', 'month',
                 'day', 'hour', 'minute']
 
         self.to_float = ['second', 'timeError', 'longitude',
-                'latitude','SemiMajor90', 'SemiMinor90',
+                'latitude', 'SemiMajor90', 'SemiMinor90',
                 'ErrorStrike', 'depth', 'depthError',
                 'Mw', 'sigmaMw', 'Ms',
                 'sigmaMs',  'mb', 'sigmamb',
@@ -107,7 +128,13 @@ class EqEntryReader(object):
         }
 
     def read(self):
-        csv_reader =  CsvReader(self.eq_entries_source)
+        """
+        Return a generator that provides an eq
+        entry in a dictionary for every line
+        with valid values.
+        """
+
+        csv_reader = CsvReader(self.eq_entries_source)
         field_names = csv_reader.fieldnames
         for eq_line in csv_reader.read():
             dict_fields_values = dict(zip(field_names, eq_line))
@@ -117,6 +144,11 @@ class EqEntryReader(object):
             yield eq_entry
 
     def convert_values(self, dict_fields_values):
+        """
+        Return an eq dictionary with all fields
+        values converted to the desired type
+        """
+
         for key in dict_fields_values:
             if key in self.to_int:
                 try:
@@ -142,9 +174,17 @@ class EqEntryReader(object):
         return dict_fields_values
 
     def no_check(self, field, value, eq_entry):
+        """
+
+        """
+
         return eq_entry
 
     def check_positive_value(self, field, value, eq_entry):
+        """
+
+        """
+
         if field in self.compulsory_fields:
             if value < 0:
                 raise EqEntryValidationError(field, value)
@@ -153,60 +193,102 @@ class EqEntryReader(object):
         return eq_entry
 
     def check_year(self, field, value, eq_entry):
+        """
+
+        """
+
         if not -10000 <= value <= time.now().year:
             raise EqEntryValidationError(field, value)
         return eq_entry
 
     def check_month(self, field, value, eq_entry):
+        """
+
+        """
+
         if not 1 <= value <= 12:
             raise EqEntryValidationError(field, value)
         return eq_entry
 
     def check_day(self, field, value, eq_entry):
+        """
+
+        """
+
         if (eq_entry['month'] == 2 and value > 29)\
             or (not 1 <= value <= 31):
             raise EqEntryValidationError(field, value)
         return eq_entry
 
     def check_hour(self, field, value, eq_entry):
+        """
+
+        """
+
         if not 0 <= value <= 23:
             raise EqEntryValidationError(field, value)
         return eq_entry
 
     def check_minute(self, field, value, eq_entry):
+        """
+
+        """
+
         if not 0 <= value <= 59:
             raise EqEntryValidationError(field, value)
         return eq_entry
 
     def check_second(self, field, value, eq_entry):
+        """
+
+        """
+
         if not 0 <= value <= 59:
             eq_entry[field] = EqEntryReader.EMPTY_STRING
         return eq_entry
 
     def check_longitude(self, field, value, eq_entry):
+        """
+
+        """
+
         if not -180 <= value <= 180:
             raise EqEntryValidationError(field, value)
         return eq_entry
 
     def check_latitude(self, field, value, eq_entry):
+        """
+
+        """
+
         if not -90 <= value <= 90:
             raise EqEntryValidationError(field, value)
         return eq_entry
 
     def check_epicentre_error_location(self, field, value, eq_entry):
+        """
+
+        """
+
         if not 0 <= value <= 360 or \
             eq_entry['SemiMinor90'] == EqEntryReader.EMPTY_STRING or \
             eq_entry['SemiMajor90'] == EqEntryReader.EMPTY_STRING or \
             not (eq_entry['SemiMinor90'] <= eq_entry['SemiMajor90']):
-                eq_entry['SemiMinor90'], eq_entry['SemiMajor90'], \
-                eq_entry['ErrorStrike'] = EqEntryReader.EMPTY_STRING
+            eq_entry['SemiMinor90'] = eq_entry['SemiMajor90'] \
+            = eq_entry[field] = EqEntryReader.EMPTY_STRING
 
         return eq_entry
 
+
 class EqEntryValidationError(Exception):
+    """
+
+    """
 
     def __init__(self, field, value):
-        """Constructs a new validation exception for the given eq entry field"""
+        """Constructs a new validation exception
+        for the given eq entry field"""
+
         msg = 'Validation error with the field: %s, having value: %s'\
             % (field, value)
         Exception.__init__(self, msg)

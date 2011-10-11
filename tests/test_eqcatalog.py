@@ -245,5 +245,27 @@ class EqEntryReaderTestCase(unittest.TestCase):
             invalid_latitude, self.eq_entry)
 
     def test_check_epicentre_error_location(self):
+        field_name = 'ErrorStrike'
         self.eq_entry['SemiMajor90'] = 5
         self.eq_entry['SemiMinor90'] = EqEntryReader.EMPTY_STRING
+        checked_eq_entry = self.eq_reader.check_epicentre_error_location(
+            field_name, 45, self.eq_entry)
+
+        self.assertEqual(checked_eq_entry['SemiMajor90'],
+            EqEntryReader.EMPTY_STRING)
+        self.assertEqual(checked_eq_entry['SemiMinor90'],
+            EqEntryReader.EMPTY_STRING)
+        self.assertEqual(checked_eq_entry['ErrorStrike'],
+            EqEntryReader.EMPTY_STRING)
+
+        self.eq_entry['SemiMajor90'] = 5
+        self.eq_entry['SemiMinor90'] = 4
+        checked_eq_entry = self.eq_reader.check_epicentre_error_location(
+            field_name, -4, self.eq_entry)
+
+        self.assertEqual(checked_eq_entry['SemiMajor90'],
+            EqEntryReader.EMPTY_STRING)
+        self.assertEqual(checked_eq_entry['SemiMinor90'],
+            EqEntryReader.EMPTY_STRING)
+        self.assertEqual(checked_eq_entry['ErrorStrike'],
+            EqEntryReader.EMPTY_STRING)
