@@ -24,19 +24,14 @@ csv, nrml.
 """
 
 import os
-
+from datetime import datetime as time
 import csv
 
-EMPTY_STRING = ''
 
 class CsvReader(object):
     """
     CsvReader allows to read csv file in
-    an iterative way, building a dictionary
-    for every data line inside the csv file,
-    dictionary's keys correspond to the csv
-    fieldnames while dictionary values are the
-    corresponding fieldname/column value.
+    an iterative way.
     """
 
     def __init__(self, filename):
@@ -44,220 +39,175 @@ class CsvReader(object):
         if not file_exists:
             raise IOError('File %s not found' % filename)
         self.filename = filename
+
+    def read(self):
+        """
+        Return a generator that provides a list
+        of field values for each line of the file.
+        """
+        with open(self.filename, 'rb') as csv_file:
+            reader = csv.reader(csv_file)
+            reader.next()  # Skip fieldnames line
+            for line in reader:
+                yield line
+
+    @property
+    def fieldnames(self):
+        """Return the fieldnames inside the csv file."""
+        with open(self.filename, 'rb') as csv_file:
+            fieldnames = csv.reader(csv_file).next()
+        return fieldnames
+
+class EqEntryReader(object):
+
+    EMPTY_STRING = ''
+
+    def __init__(self, eq_entries_source):
+        self.eq_entries_source = eq_entries_source
+
+        self.to_int = ['eventID', 'Identifier', 'year', 'month',
+                'day', 'hour', 'minute']
+
+        self.to_float = ['second', 'timeError', 'longitude',
+                'latitude','SemiMajor90', 'SemiMinor90',
+                'ErrorStrike', 'depth', 'depthError',
+                'Mw', 'sigmaMw', 'Ms',
+                'sigmaMs',  'mb', 'sigmamb',
+                'ML', 'sigmaML']
+
+        self.compulsory_fields = self.to_int + [self.to_float[2],
+                self.to_float[3], self.to_float[7], self.to_float[9]]
+
         self.check_map = {
-                'eventID': self.check_positive_int,
+                'eventID': self.check_positive_value,
                 'Agency': self.no_check,
-                'Identifier': self.check_positive_int,
+                'Identifier': self.check_positive_value,
                 'year': self.check_year,
                 'month': self.check_month,
                 'day': self.check_day,
                 'hour': self.check_hour,
                 'minute': self.check_minute,
                 'second': self.check_second,
-                'timeError': self.check_time_error,
+                'timeError': self.no_check,
                 'longitude': self.check_longitude,
                 'latitude': self.check_latitude,
-                'SemiMajor90': self.check_semi_major,
-                'SemiMinor90': self.check_semi_minor,
-                'ErrorStrike': self.check_error_strike,
-                'depth': self.check_depth,
-                'depthError': self.check_depth_error,
-                'Mw': self.check_mw,
-                'sigmaMw': self.check_positive_float,
-                'Ms': self.check_float,
-                'sigmaMs': self.check_positive_float,
-                'mb': self.check_float,
-                'sigmamb': self.check_positive_float,
-                'ML': self.check_float,
-                'sigmaML': self.check_positive_float
+                'SemiMajor90': self.check_positive_value,
+                'SemiMinor90': self.check_positive_value,
+                'ErrorStrike': self.check_epicentre_error_location,
+                'depth': self.check_positive_value,
+                'depthError': self.check_positive_value,
+                'Mw': self.no_check,
+                'sigmaMw': self.check_positive_value,
+                'Ms': self.no_check,
+                'sigmaMs': self.check_positive_value,
+                'mb': self.no_check,
+                'sigmamb': self.check_positive_value,
+                'ML': self.no_check,
+                'sigmaML': self.check_positive_value
         }
 
     def read(self):
-        """
-        Return a generator that provides an EQ definition
-        in a dictionary for each line of the file.
-        """
-        with open(self.filename, 'rb') as csv_file:
-            reader = csv.reader(csv_file)
-            reader.next()  # Skip the first line containing fieldnames
-            for line in reader:
-                valid_eq, eq_entry = self.check_line(line)
-                if valid_eq:
-                    yield eq_entry
+        csv_reader =  CsvReader(self.eq_entries_source)
+        field_names = csv_reader.fieldnames
+        for eq_line in csv_reader.read():
+            dict_fields_values = dict(zip(field_names, eq_line))
+            eq_entry = self.convert_values(dict_fields_values)
+            for key, value in eq_entry.iteritems():
+                eq_entry = self.check_map[key](key, value, eq_entry)
+            yield eq_entry
 
-    @property
-    def fieldnames(self):
-        """Return the fieldnames inside the csv file."""
-        with open(self.filename, 'rb') as csv_file:
-            reader = csv.reader(csv_file).next()
-        return reader
+    def convert_values(self, dict_fields_values):
+        for key in dict_fields_values:
+            if key in self.to_int:
+                try:
+                    dict_fields_values[key] = int(
+                        dict_fields_values[key])
+                except ValueError:
+                    # fields in self.to_int are all compulsory
+                    raise EqEntryValidationError(key,
+                            dict_fields_values[key])
 
-    def check_line(self, line):
-        eq_entry = {}
-        correct_eq = True
-        for field, value in zip(self.fieldnames, line):
-            valid, converted_value = self.check_map[field](value, eq_entry)
-            if not valid:
-                correct_eq = False
-                break
-            else:
-                eq_entry[field] = converted_value
-        return correct_eq, eq_entry
+            elif key in self.to_float:
 
-    def check_positive_int(self, value, eq_entry):
-        try:
-            converted_value = int(value)
-        except ValueError:
-            return False, 0
-        return converted_value >= 0, converted_value
+                try:
+                    dict_fields_values[key] = float(
+                        dict_fields_values[key])
+                except ValueError:
+                    if key in self.compulsory_fields:
+                        raise EqEntryValidationError(key,
+                            dict_fields_values[key])
+                    else:
+                        dict_fields_values[key] = EqEntryReader.EMPTY_STRING
 
-    def check_year(self, value, eq_entry):
-        try:
-            converted_value = int(value)
-        except ValueError:
-            return False, 0
-        return True, converted_value
+        return dict_fields_values
 
-    def check_month(self, value, eq_entry):
-        try:
-            converted_value = int(value)
-        except ValueError:
-            return False, 0
-        return converted_value in xrange(1, 13), converted_value
+    def no_check(self, field, value, eq_entry):
+        return eq_entry
 
-    def check_day(self, value, eq_entry):
-        try:
-            converted_value = int(value)
-        except ValueError:
-            return False, 0
-        if eq_entry['month'] == 2:
-            valid = converted_value in xrange(1, 30)
-        else:
-            valid = converted_value in xrange(1, 32)
-        return valid, converted_value
+    def check_positive_value(self, field, value, eq_entry):
+        if field in self.compulsory_fields:
+            if value < 0:
+                raise EqEntryValidationError(field, value)
+        if value < 0:
+            eq_entry[field] = EqEntryReader.EMPTY_STRING
+        return eq_entry
 
-    def check_hour(self, value, eq_entry):
-        try:
-            converted_value = int(value)
-        except ValueError:
-            return False, 0
-        return converted_value in xrange(0, 24), converted_value
+    def check_year(self, field, value, eq_entry):
+        if not -10000 <= value <= time.now().year:
+            raise EqEntryValidationError(field, value)
+        return eq_entry
 
-    def check_minute(self, value, eq_entry):
-        try:
-            converted_value = int(value)
-        except ValueError:
-            return False, 0
-        return converted_value in xrange(0, 60), converted_value
+    def check_month(self, field, value, eq_entry):
+        if not 1 <= value <= 12:
+            raise EqEntryValidationError(field, value)
+        return eq_entry
 
-    def check_second(self, value, eq_entry):
-        if not value.isspace():
-            try:
-                converted_value = float(value)
-            except ValueError:
-                return False, 0
-            return converted_value in xrange(0, 60), converted_value
-        else:
-            return True, EMPTY_STRING
+    def check_day(self, field, value, eq_entry):
+        if (eq_entry['month'] == 2 and value > 29)\
+            or value > 31:
+            raise EqEntryValidationError(field, value)
+        return eq_entry
 
-    def check_time_error(self, value, eq_entry):
-        if not value.isspace():
-            try:
-                converted_value = float(value)
-            except ValueError:
-                return False, 0
-            return True, converted_value
-        else:
-            return True, EMPTY_STRING
+    def check_hour(self, field, value, eq_entry):
+        if not 0 <= value <= 23:
+            raise EqEntryValidationError(field, value)
+        return eq_entry
 
-    def check_longitude(self, value, eq_entry):
-        try:
-            converted_value = float(value)
-        except ValueError:
-            return False, 0
-        return -180 <= converted_value <= 180 , converted_value
+    def check_minute(self, field, value, eq_entry):
+        if not 0 <= value <= 59:
+            raise EqEntryValidationError(field, value)
+        return eq_entry
 
-    def check_latitude(self, value, eq_entry):
-        try:
-            converted_value = float(value)
-        except ValueError:
-            return False, 0
-        return -90 <= converted_value <= 90, converted_value
+    def check_second(self, field, value, eq_entry):
+        if not 0 <= value <= 59:
+            eq_entry[field] = self.EqEntryReader.EMPTY_STRING
+        return eq_entry
 
-    def check_semi_major(self, value, eq_entry):
-        if not value.isspace():
-            try:
-                converted_value = float(value)
-            except ValueError:
-                return False, 0
-            return converted_value >= 0, converted_value
-        else:
-            return True, EMPTY_STRING
+    def check_longitude(self, field, value, eq_entry):
+        if not -180 <= value <= 180:
+            raise EqEntryValidationError(field, value)
+        return eq_entry
 
-    def check_semi_minor(self, value, eq_entry):
-        if not value.isspace():
-            try:
-                converted_value = float(value)
-            except ValueError:
-                return False, 0
-            return converted_value <= eq_entry['SemiMajor90'], \
-                    converted_value
-        else:
-            return True, EMPTY_STRING
+    def check_latitude(self, field, value, eq_entry):
+        if not -90 <= value <= 90:
+            raise EqEntryValidationError(field, value)
+        return eq_entry
 
-    def check_error_strike(self, value, eq_entry):
-        if not value.isspace():
-            try:
-                converted_value = float(value)
-            except ValueError:
-                return False, 0
-            return 0 <= converted_value <= 360, converted_value
-        else:
-            return True, EMPTY_STRING
+    def check_epicentre_error_location(self, field, value, eq_entry):
+        if not 0 <= value <= 360 or \
+            eq_entry['SemiMinor90'] == EqEntryReader.EMPTY_STRING or \
+            eq_entry['SemiMajor90'] == EqEntryReader.EMPTY_STRING or \
+            not (eq_entry['SemiMinor90'] <= eq_entry['SemiMajor90']):
+                eq_entry['SemiMinor90'], eq_entry['SemiMajor90'], \
+                eq_entry['ErrorStrike'] = EqEntryReader.EMPTY_STRING
 
-    def check_depth(self, value, eq_entry):
-        try:
-            converted_value = float(value)
-        except ValueError:
-            return False, 0
-        return converted_value >= 0, converted_value
+        return eq_entry
 
-    def check_depth_error(self, value, eq_entry):
-        if not value.isspace():
-            try:
-                converted_value = float(value)
-            except ValueError:
-                return False, 0
-            return converted_value >=0, converted_value
-        else:
-            return True, EMPTY_STRING
+class EqEntryValidationError(Exception):
 
-    def check_mw(self, value, eq_entry):
-        try:
-            converted_value = float(value)
-        except ValueError:
-            return False, 0
-        return True, converted_value
-
-    def check_positive_float(self, value, eq_entry):
-        if not value.isspace():
-            try:
-                converted_value = float(value)
-            except ValueError:
-                return False, 0
-            return converted_value >= 0, converted_value
-        else:
-            return True, EMPTY_STRING
-
-    def check_float(self, value, eq_entry):
-        if not value.isspace():
-            try:
-                converted_value = float(value)
-            except ValueError:
-                return False, 0
-            return True, converted_value
-        else:
-            return True, EMPTY_STRING
-
-    def no_check(self, value, eq_entry):
-        return True, value
+    def __init__(self, field, value):
+        """Constructs a new validation exception for the given eq entry field"""
+        msg = 'Validation error with the field: %s, having value: %s'\
+            % (field, value)
+        Exception.__init__(self, msg)
+        self.args = (field, msg)
