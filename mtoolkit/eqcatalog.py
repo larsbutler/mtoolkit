@@ -164,7 +164,7 @@ class EqEntryReader(object):
 
     def check_day(self, field, value, eq_entry):
         if (eq_entry['month'] == 2 and value > 29)\
-            or value > 31:
+            or (not 1 <= value <= 31):
             raise EqEntryValidationError(field, value)
         return eq_entry
 
@@ -180,7 +180,7 @@ class EqEntryReader(object):
 
     def check_second(self, field, value, eq_entry):
         if not 0 <= value <= 59:
-            eq_entry[field] = self.EqEntryReader.EMPTY_STRING
+            eq_entry[field] = EqEntryReader.EMPTY_STRING
         return eq_entry
 
     def check_longitude(self, field, value, eq_entry):

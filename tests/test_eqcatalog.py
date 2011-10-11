@@ -113,6 +113,8 @@ class EqEntryReaderTestCase(unittest.TestCase):
                 'sigmaMs',  'mb', 'sigmamb',
                 'ML', 'sigmaML']
 
+        self.eq_entry = {}
+
     def test_generated_eq_entry(self):
         first_eq_entry = dict(zip(self.fieldnames, self.first_data_row))
 
@@ -167,17 +169,81 @@ class EqEntryReaderTestCase(unittest.TestCase):
         self.assertEqual(converted_semimajor_value, EqEntryReader.EMPTY_STRING)
 
     def test_check_positive_value(self):
-        eq_entry = {}
         compulsory_field_name = 'depth'
         non_compulsory_field_name = 'sigmaMs'
         compulsory_field_value = -5
         non_compulsory_field_value = -2
         checked_eq_entry = self.eq_reader.check_positive_value(
-        non_compulsory_field_name, non_compulsory_field_value, eq_entry)
+        non_compulsory_field_name, non_compulsory_field_value, self.eq_entry)
 
         self.assertRaises(EqEntryValidationError,
             self.eq_reader.check_positive_value, compulsory_field_name,
-            compulsory_field_value, eq_entry)
+            compulsory_field_value, self.eq_entry)
         self.assertEqual(EqEntryReader.EMPTY_STRING, checked_eq_entry['sigmaMs'])
 
+    def test_check_year(self):
+        field_name = 'year'
+        invalid_year = 22015
 
+        self.assertRaises(EqEntryValidationError,
+            self.eq_reader.check_year, field_name, invalid_year, self.eq_entry)
+
+    def test_check_month(self):
+        field_name = 'month'
+        invalid_month = 0
+
+        self.assertRaises(EqEntryValidationError,
+            self.eq_reader.check_month, field_name,
+            invalid_month, self.eq_entry)
+
+    def test_check_day(self):
+        field_name = 'day'
+        invalid_february_day = 30
+        self.eq_entry = {'month':2, 'day': invalid_february_day}
+        self.assertRaises(EqEntryValidationError,
+            self.eq_reader.check_day, field_name,
+            invalid_february_day, self.eq_entry)
+
+    def test_check_hour(self):
+        field_name = 'hour'
+        invalid_hour = 24
+
+        self.assertRaises(EqEntryValidationError,
+            self.eq_reader.check_hour, field_name,
+            invalid_hour, self.eq_entry)
+
+    def test_check_minute(self):
+        field_name = 'minute'
+        invalid_minute = '60'
+
+        self.assertRaises(EqEntryValidationError,
+            self.eq_reader.check_minute, field_name,
+            invalid_minute, self.eq_entry)
+
+    def test_check_second(self):
+        field_name = 'second'
+        invalid_second = -4
+        check_eq_entry = self.eq_reader.check_second(field_name,
+                invalid_second, self.eq_entry)
+
+        self.assertEqual(check_eq_entry['second'], EqEntryReader.EMPTY_STRING)
+
+    def test_check_longitude(self):
+        field_name = 'longitude'
+        invalid_longitude = -181
+
+        self.assertRaises(EqEntryValidationError,
+            self.eq_reader.check_longitude, field_name,
+            invalid_longitude, self.eq_entry)
+
+    def test_check_latitude(self):
+        field_name = 'latitude'
+        invalid_latitude = 91
+
+        self.assertRaises(EqEntryValidationError,
+            self.eq_reader.check_latitude, field_name,
+            invalid_latitude, self.eq_entry)
+
+    def test_check_epicentre_error_location(self):
+        self.eq_entry['SemiMajor90'] = 5
+        self.eq_entry['SemiMinor90'] = EqEntryReader.EMPTY_STRING
