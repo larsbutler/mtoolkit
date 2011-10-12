@@ -179,7 +179,8 @@ class EqEntryReaderTestCase(unittest.TestCase):
         self.assertRaises(EqEntryValidationError,
             self.eq_reader.check_positive_value, compulsory_field_name,
             compulsory_field_value, self.eq_entry)
-        self.assertEqual(EqEntryReader.EMPTY_STRING, checked_eq_entry['sigmaMs'])
+        self.assertEqual(EqEntryReader.EMPTY_STRING,
+                checked_eq_entry['sigmaMs'])
 
     def test_check_year(self):
         field_name = 'year'
@@ -199,7 +200,7 @@ class EqEntryReaderTestCase(unittest.TestCase):
     def test_check_day(self):
         field_name = 'day'
         invalid_february_day = 30
-        self.eq_entry = {'month':2, 'day': invalid_february_day}
+        self.eq_entry = {'month': 2, 'day': invalid_february_day}
         self.assertRaises(EqEntryValidationError,
             self.eq_reader.check_day, field_name,
             invalid_february_day, self.eq_entry)

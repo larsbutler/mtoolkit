@@ -82,6 +82,7 @@ class EqEntryReader(object):
         to_int   - fields to be converted in integer
         to_float - fields to be converted in float
         check_map - associates each field with its own check
+        current_line - denotes the line in use by the read method
         """
 
         self.eq_entries_source = eq_entries_source
@@ -127,6 +128,8 @@ class EqEntryReader(object):
                 'sigmaML': self.check_positive_value
         }
 
+        self.current_line = 0
+
     def read(self):
         """
         Return a generator that provides an eq
@@ -136,7 +139,8 @@ class EqEntryReader(object):
 
         csv_reader = CsvReader(self.eq_entries_source)
         field_names = csv_reader.fieldnames
-        for eq_line in csv_reader.read():
+        for self.current_line, eq_line in enumerate(
+            csv_reader.read(), start=2):
             dict_fields_values = dict(zip(field_names, eq_line))
             eq_entry = self.convert_values(dict_fields_values)
             for key, value in eq_entry.iteritems():
@@ -157,7 +161,7 @@ class EqEntryReader(object):
                 except ValueError:
                     # fields in self.to_int are all compulsory
                     raise EqEntryValidationError(key,
-                            dict_fields_values[key])
+                            dict_fields_values[key], self.current_line)
 
             elif key in self.to_float:
 
@@ -175,72 +179,86 @@ class EqEntryReader(object):
 
     def no_check(self, field, value, eq_entry):
         """
-
+        Return an eq_entry without applying any check.
         """
 
         return eq_entry
 
     def check_positive_value(self, field, value, eq_entry):
         """
-
+        Return an eq_entry checking if field has a positive
+        value, raises an exception in case of a compulsory
+        field.
         """
 
         if field in self.compulsory_fields:
             if value < 0:
-                raise EqEntryValidationError(field, value)
+                raise EqEntryValidationError(field, value, self.current_line)
         if value < 0:
             eq_entry[field] = EqEntryReader.EMPTY_STRING
         return eq_entry
 
     def check_year(self, field, value, eq_entry):
         """
-
+        Return an eq_entry checking if year is included
+        in a desired range, raises an exception in case of failed
+        check.
         """
 
         if not -10000 <= value <= time.now().year:
-            raise EqEntryValidationError(field, value)
+            raise EqEntryValidationError(field, value, self.current_line)
         return eq_entry
 
     def check_month(self, field, value, eq_entry):
         """
-
+        Return an eq_entry checking if month is included
+        in a desired range, raises an exception in case of failed
+        check.
         """
 
         if not 1 <= value <= 12:
-            raise EqEntryValidationError(field, value)
+            raise EqEntryValidationError(field, value, self.current_line)
         return eq_entry
 
     def check_day(self, field, value, eq_entry):
         """
-
+        Return an eq_entry checking if day is included
+        in a desired range, raises an exception in case of failed
+        check. This is a naive way to check if day is correct.
         """
 
         if (eq_entry['month'] == 2 and value > 29)\
             or (not 1 <= value <= 31):
-            raise EqEntryValidationError(field, value)
+            raise EqEntryValidationError(field, value, self.current_line)
         return eq_entry
 
     def check_hour(self, field, value, eq_entry):
         """
-
+        Return an eq_entry checking if hour is included
+        in a desired range, raises an exception in case of failed
+        check.
         """
 
         if not 0 <= value <= 23:
-            raise EqEntryValidationError(field, value)
+            raise EqEntryValidationError(field, value, self.current_line)
         return eq_entry
 
     def check_minute(self, field, value, eq_entry):
         """
-
+        Return an eq_entry checking if minute is included
+        in a desired range, raises an exception in case of failed
+        check.
         """
 
         if not 0 <= value <= 59:
-            raise EqEntryValidationError(field, value)
+            raise EqEntryValidationError(field, value, self.current_line)
         return eq_entry
 
     def check_second(self, field, value, eq_entry):
         """
-
+        Return an eq_entry checking if second is included
+        in a desired range, raises an exception in case of failed
+        check.
         """
 
         if not 0 <= value <= 59:
@@ -249,25 +267,33 @@ class EqEntryReader(object):
 
     def check_longitude(self, field, value, eq_entry):
         """
-
+        Return an eq_entry checking if longitude is included
+        in a desired range, raises an exception in case of failed
+        check.
         """
 
         if not -180 <= value <= 180:
-            raise EqEntryValidationError(field, value)
+            raise EqEntryValidationError(field, value, self.current_line)
         return eq_entry
 
     def check_latitude(self, field, value, eq_entry):
         """
-
+        Return an eq_entry checking if latitude is included
+        in a desired range, raises an exception in case of failed
+        check.
         """
 
         if not -90 <= value <= 90:
-            raise EqEntryValidationError(field, value)
+            raise EqEntryValidationError(field, value, self.current_line)
         return eq_entry
 
     def check_epicentre_error_location(self, field, value, eq_entry):
         """
-
+        Return an eq_entry checking if the field ErrorStrike is included
+        in a desired range, if only one of three fields constituting an
+        epicentre error location (ErrorStrike, SemiMajor90, SemiMinor90)
+        is not valid or without value, in all fields is placed an empty
+        string.
         """
 
         if not 0 <= value <= 360 or \
@@ -282,14 +308,16 @@ class EqEntryReader(object):
 
 class EqEntryValidationError(Exception):
     """
-
+    EqEntry validation error could be raised
+    because of a failed conversion or check
+    of an eq entry compulsory field.
     """
 
-    def __init__(self, field, value):
+    def __init__(self, field, value, line_number):
         """Constructs a new validation exception
         for the given eq entry field"""
 
-        msg = 'Validation error with the field: %s, having value: %s'\
-            % (field, value)
+        msg = "Validation error with the field: %s, having value: %s "\
+        "at line number: %s" % (field, value, line_number)
         Exception.__init__(self, msg)
         self.args = (field, msg)
