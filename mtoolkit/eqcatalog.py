@@ -143,8 +143,8 @@ class EqEntryReader(object):
             csv_reader.read(), start=2):
             dict_fields_values = dict(zip(field_names, eq_line))
             eq_entry = self.convert_values(dict_fields_values)
-            for key, value in eq_entry.iteritems():
-                eq_entry = self.check_map[key](key, value, eq_entry)
+            for key in eq_entry.keys():
+                eq_entry = self.check_map[key](key, eq_entry)
             yield eq_entry
 
     def convert_values(self, dict_fields_values):
@@ -177,14 +177,14 @@ class EqEntryReader(object):
 
         return dict_fields_values
 
-    def no_check(self, field, value, eq_entry):
+    def no_check(self, field, eq_entry):
         """
         Return an eq_entry without applying any check.
         """
 
         return eq_entry
 
-    def check_positive_value(self, field, value, eq_entry):
+    def check_positive_value(self, field, eq_entry):
         """
         Return an eq_entry checking if field has a positive
         value, raises an exception in case of a compulsory
@@ -192,102 +192,110 @@ class EqEntryReader(object):
         """
 
         if field in self.compulsory_fields:
-            if value < 0:
-                raise EqEntryValidationError(field, value, self.current_line)
-        if value < 0:
+            if eq_entry[field] < 0:
+                raise EqEntryValidationError(field,
+                        eq_entry[field], self.current_line)
+        if eq_entry[field] < 0:
             eq_entry[field] = EqEntryReader.EMPTY_STRING
         return eq_entry
 
-    def check_year(self, field, value, eq_entry):
+    def check_year(self, field, eq_entry):
         """
         Return an eq_entry checking if year is included
         in a desired range, raises an exception in case of failed
         check.
         """
 
-        if not -10000 <= value <= time.now().year:
-            raise EqEntryValidationError(field, value, self.current_line)
+        if not -10000 <= eq_entry[field] <= time.now().year:
+            raise EqEntryValidationError(field,
+                    eq_entry[field], self.current_line)
         return eq_entry
 
-    def check_month(self, field, value, eq_entry):
+    def check_month(self, field, eq_entry):
         """
         Return an eq_entry checking if month is included
         in a desired range, raises an exception in case of failed
         check.
         """
 
-        if not 1 <= value <= 12:
-            raise EqEntryValidationError(field, value, self.current_line)
+        if not 1 <= eq_entry[field] <= 12:
+            raise EqEntryValidationError(field,
+                    eq_entry[field], self.current_line)
         return eq_entry
 
-    def check_day(self, field, value, eq_entry):
+    def check_day(self, field, eq_entry):
         """
         Return an eq_entry checking if day is included
         in a desired range, raises an exception in case of failed
         check. This is a naive way to check if day is correct.
         """
 
-        if (eq_entry['month'] == 2 and value > 29)\
-            or (not 1 <= value <= 31):
-            raise EqEntryValidationError(field, value, self.current_line)
+        if (eq_entry['month'] == 2 and eq_entry[field] > 29)\
+            or (not 1 <= eq_entry[field] <= 31):
+            raise EqEntryValidationError(field,
+                    eq_entry[field], self.current_line)
         return eq_entry
 
-    def check_hour(self, field, value, eq_entry):
+    def check_hour(self, field, eq_entry):
         """
         Return an eq_entry checking if hour is included
         in a desired range, raises an exception in case of failed
         check.
         """
 
-        if not 0 <= value <= 23:
-            raise EqEntryValidationError(field, value, self.current_line)
+        if not 0 <= eq_entry[field] <= 23:
+            raise EqEntryValidationError(field,
+                    eq_entry[field], self.current_line)
         return eq_entry
 
-    def check_minute(self, field, value, eq_entry):
+    def check_minute(self, field, eq_entry):
         """
         Return an eq_entry checking if minute is included
         in a desired range, raises an exception in case of failed
         check.
         """
 
-        if not 0 <= value <= 59:
-            raise EqEntryValidationError(field, value, self.current_line)
+        if not 0 <= eq_entry[field] <= 59:
+            raise EqEntryValidationError(field,
+                    eq_entry[field], self.current_line)
         return eq_entry
 
-    def check_second(self, field, value, eq_entry):
+    def check_second(self, field, eq_entry):
         """
         Return an eq_entry checking if second is included
         in a desired range, raises an exception in case of failed
         check.
         """
 
-        if not 0 <= value <= 59:
+        if not 0 <= eq_entry[field] <= 59:
             eq_entry[field] = EqEntryReader.EMPTY_STRING
         return eq_entry
 
-    def check_longitude(self, field, value, eq_entry):
+    def check_longitude(self, field, eq_entry):
         """
         Return an eq_entry checking if longitude is included
         in a desired range, raises an exception in case of failed
         check.
         """
 
-        if not -180 <= value <= 180:
-            raise EqEntryValidationError(field, value, self.current_line)
+        if not -180 <= eq_entry[field] <= 180:
+            raise EqEntryValidationError(field,
+                    eq_entry[field], self.current_line)
         return eq_entry
 
-    def check_latitude(self, field, value, eq_entry):
+    def check_latitude(self, field, eq_entry):
         """
         Return an eq_entry checking if latitude is included
         in a desired range, raises an exception in case of failed
         check.
         """
 
-        if not -90 <= value <= 90:
-            raise EqEntryValidationError(field, value, self.current_line)
+        if not -90 <= eq_entry[field] <= 90:
+            raise EqEntryValidationError(field,
+                    eq_entry[field], self.current_line)
         return eq_entry
 
-    def check_epicentre_error_location(self, field, value, eq_entry):
+    def check_epicentre_error_location(self, field, eq_entry):
         """
         Return an eq_entry checking if the field ErrorStrike is included
         in a desired range, if only one of three fields constituting an
@@ -296,7 +304,7 @@ class EqEntryReader(object):
         string.
         """
 
-        if not 0 <= value <= 360 or \
+        if not 0 <= eq_entry[field] <= 360 or \
             eq_entry['SemiMinor90'] == EqEntryReader.EMPTY_STRING or \
             eq_entry['SemiMajor90'] == EqEntryReader.EMPTY_STRING or \
             not (eq_entry['SemiMinor90'] <= eq_entry['SemiMajor90']):
