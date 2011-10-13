@@ -113,8 +113,6 @@ class EqEntryReaderTestCase(unittest.TestCase):
                 'sigmaMs',  'mb', 'sigmamb',
                 'ML', 'sigmaML']
 
-        self.eq_entry = {}
-
     def test_generated_eq_entry(self):
         first_eq_entry = dict(zip(self.fieldnames, self.first_data_row))
 
@@ -175,106 +173,92 @@ class EqEntryReaderTestCase(unittest.TestCase):
         non_compulsory_field_value = -2
         eq_entry = {compulsory_field_name: compulsory_field_value,
                 non_compulsory_field_name: non_compulsory_field_value}
-        checked_eq_entry = self.eq_reader.check_positive_value(
+        self.eq_reader.check_positive_value(
         non_compulsory_field_name, eq_entry)
 
-        self.assertRaises(EqEntryValidationError,
-            self.eq_reader.check_positive_value, compulsory_field_name,
-            eq_entry)
-        self.assertEqual(EqEntryReader.EMPTY_STRING,
-                checked_eq_entry['sigmaMs'])
+        self.assertFalse(self.eq_reader.check_positive_value(
+            compulsory_field_name, eq_entry))
+        self.assertEqual(EqEntryReader.EMPTY_STRING, eq_entry['sigmaMs'])
 
     def test_check_year(self):
         field_name = 'year'
         invalid_year = 22015
         eq_entry = {field_name: invalid_year}
 
-        self.assertRaises(EqEntryValidationError,
-            self.eq_reader.check_year, field_name, eq_entry)
+        self.assertFalse(self.eq_reader.check_year(field_name, eq_entry))
 
     def test_check_month(self):
         field_name = 'month'
         invalid_month = 0
         eq_entry = {field_name: invalid_month}
 
-        self.assertRaises(EqEntryValidationError,
-            self.eq_reader.check_month, field_name,
-            eq_entry)
+        self.assertFalse(self.eq_reader.check_month(field_name, eq_entry))
 
     def test_check_day(self):
         field_name = 'day'
         invalid_february_day = 30
-        self.eq_entry = {'month': 2, 'day': invalid_february_day}
-        self.assertRaises(EqEntryValidationError,
-            self.eq_reader.check_day, field_name,
-            self.eq_entry)
+        eq_entry = {'month': 2, 'day': invalid_february_day}
+
+        self.assertFalse(self.eq_reader.check_day(field_name, eq_entry))
 
     def test_check_hour(self):
         field_name = 'hour'
         invalid_hour = 24
         eq_entry = {field_name: invalid_hour}
 
-        self.assertRaises(EqEntryValidationError,
-            self.eq_reader.check_hour, field_name,
-            eq_entry)
+        self.assertFalse(self.eq_reader.check_hour(field_name, eq_entry))
 
     def test_check_minute(self):
         field_name = 'minute'
         invalid_minute = '60'
         eq_entry = {field_name: invalid_minute}
 
-        self.assertRaises(EqEntryValidationError,
-            self.eq_reader.check_minute, field_name,
-            eq_entry)
+        self.assertFalse(self.eq_reader.check_minute(field_name, eq_entry))
 
     def test_check_second(self):
         field_name = 'second'
         invalid_second = -4
         eq_entry = {field_name: invalid_second}
-        check_eq_entry = self.eq_reader.check_second(field_name, eq_entry)
+        self.eq_reader.check_second(field_name, eq_entry)
 
-        self.assertEqual(check_eq_entry['second'], EqEntryReader.EMPTY_STRING)
+        self.assertEqual(eq_entry['second'], EqEntryReader.EMPTY_STRING)
 
     def test_check_longitude(self):
         field_name = 'longitude'
         invalid_longitude = -181
         eq_entry = {field_name: invalid_longitude}
 
-        self.assertRaises(EqEntryValidationError,
-            self.eq_reader.check_longitude, field_name,
-            eq_entry)
+        self.assertFalse(self.eq_reader.check_longitude(field_name, eq_entry))
 
     def test_check_latitude(self):
         field_name = 'latitude'
         invalid_latitude = 91
         eq_entry = {field_name: invalid_latitude}
 
-        self.assertRaises(EqEntryValidationError,
-            self.eq_reader.check_latitude, field_name,
-            eq_entry)
+        self.assertFalse(self.eq_reader.check_latitude(field_name, eq_entry))
 
     def test_check_epicentre_error_location(self):
         field_name = 'ErrorStrike'
         eq_entry = {field_name: 45, 'SemiMajor90': 5,
             'SemiMinor90': EqEntryReader.EMPTY_STRING}
-        checked_eq_entry = self.eq_reader.check_epicentre_error_location(
+        self.eq_reader.check_epicentre_error_location(
             field_name, eq_entry)
 
-        self.assertEqual(checked_eq_entry['SemiMajor90'],
+        self.assertEqual(eq_entry['SemiMajor90'],
             EqEntryReader.EMPTY_STRING)
-        self.assertEqual(checked_eq_entry['SemiMinor90'],
+        self.assertEqual(eq_entry['SemiMinor90'],
             EqEntryReader.EMPTY_STRING)
-        self.assertEqual(checked_eq_entry['ErrorStrike'],
+        self.assertEqual(eq_entry['ErrorStrike'],
             EqEntryReader.EMPTY_STRING)
 
-        self.eq_entry['SemiMajor90'] = 5
-        self.eq_entry['SemiMinor90'] = 4
-        checked_eq_entry = self.eq_reader.check_epicentre_error_location(
+        eq_entry['SemiMajor90'] = 5
+        eq_entry['SemiMinor90'] = 4
+        self.eq_reader.check_epicentre_error_location(
             field_name, eq_entry)
 
-        self.assertEqual(checked_eq_entry['SemiMajor90'],
+        self.assertEqual(eq_entry['SemiMajor90'],
             EqEntryReader.EMPTY_STRING)
-        self.assertEqual(checked_eq_entry['SemiMinor90'],
+        self.assertEqual(eq_entry['SemiMinor90'],
             EqEntryReader.EMPTY_STRING)
-        self.assertEqual(checked_eq_entry['ErrorStrike'],
+        self.assertEqual(eq_entry['ErrorStrike'],
             EqEntryReader.EMPTY_STRING)

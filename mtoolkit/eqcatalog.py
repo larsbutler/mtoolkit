@@ -70,9 +70,10 @@ class EqEntryReader(object):
     series of checks. If a compulsory field
     can't be converted or doesn't pass
     it's own check, no eq entry is generated,
-    otherwise if a non compulsory field can't be
-    converted or validated an empty string is
-    placed instead of the incorrect value.
+    and an exception is raised, otherwise if
+    a non compulsory field can't be converted
+    or validated an empty string is placed instead
+    of the incorrect value.
     """
 
     EMPTY_STRING = ''
@@ -143,14 +144,18 @@ class EqEntryReader(object):
             csv_reader.read(), start=2):
             dict_fields_values = dict(zip(field_names, eq_line))
             eq_entry = self.convert_values(dict_fields_values)
-            for key in eq_entry.keys():
-                eq_entry = self.check_map[key](key, eq_entry)
+            for field in eq_entry.keys():
+                if not self.check_map[field](field, eq_entry)\
+                    and field in self.compulsory_fields:
+
+                    raise EqEntryValidationError(field,
+                            eq_entry[field], self.current_line)
             yield eq_entry
 
     def convert_values(self, dict_fields_values):
         """
         Return an eq dictionary with all fields
-        values converted to the desired type
+        values converted to the respective type
         """
 
         for key in dict_fields_values:
@@ -179,129 +184,94 @@ class EqEntryReader(object):
 
     def no_check(self, field, eq_entry):
         """
-        Return an eq_entry without applying any check.
+        Return True without applying any check.
         """
 
-        return eq_entry
+        return True
 
     def check_positive_value(self, field, eq_entry):
         """
-        Return an eq_entry checking if field has a positive
-        value, raises an exception in case of a compulsory
-        field.
+        Return a bool stating if check is passed,
+        if a non compulsory field doesn't pass the check
+        an empty string is placed instead of the value
+        in the eq_entry.
         """
 
         if field in self.compulsory_fields:
-            if eq_entry[field] < 0:
-                raise EqEntryValidationError(field,
-                        eq_entry[field], self.current_line)
+            return eq_entry[field] > 0
         if eq_entry[field] < 0:
             eq_entry[field] = EqEntryReader.EMPTY_STRING
-        return eq_entry
+        return True
 
     def check_year(self, field, eq_entry):
         """
-        Return an eq_entry checking if year is included
-        in a desired range, raises an exception in case of failed
-        check.
+        Return a bool stating if check is passed.
         """
 
-        if not -10000 <= eq_entry[field] <= time.now().year:
-            raise EqEntryValidationError(field,
-                    eq_entry[field], self.current_line)
-        return eq_entry
+        return -10000 <= eq_entry[field] <= time.now().year
 
     def check_month(self, field, eq_entry):
         """
-        Return an eq_entry checking if month is included
-        in a desired range, raises an exception in case of failed
-        check.
+        Return a bool stating if check is passed.
         """
 
-        if not 1 <= eq_entry[field] <= 12:
-            raise EqEntryValidationError(field,
-                    eq_entry[field], self.current_line)
-        return eq_entry
+        return 1 <= eq_entry[field] <= 12
 
     def check_day(self, field, eq_entry):
         """
-        Return an eq_entry checking if day is included
-        in a desired range, raises an exception in case of failed
-        check. This is a naive way to check if day is correct.
+        Return a bool stating if check is passed.
         """
 
-        if (eq_entry['month'] == 2 and eq_entry[field] > 29)\
-            or (not 1 <= eq_entry[field] <= 31):
-            raise EqEntryValidationError(field,
-                    eq_entry[field], self.current_line)
-        return eq_entry
+        return (eq_entry['month'] == 2 and eq_entry[field] <= 29)\
+            or (eq_entry['month'] != 2 and 1 <= eq_entry[field] <= 31)
 
     def check_hour(self, field, eq_entry):
         """
-        Return an eq_entry checking if hour is included
-        in a desired range, raises an exception in case of failed
-        check.
+        Return a bool stating if check is passed.
         """
 
-        if not 0 <= eq_entry[field] <= 23:
-            raise EqEntryValidationError(field,
-                    eq_entry[field], self.current_line)
-        return eq_entry
+        return 0 <= eq_entry[field] <= 23
 
     def check_minute(self, field, eq_entry):
         """
-        Return an eq_entry checking if minute is included
-        in a desired range, raises an exception in case of failed
-        check.
+        Return a bool stating if check is passed.
         """
 
-        if not 0 <= eq_entry[field] <= 59:
-            raise EqEntryValidationError(field,
-                    eq_entry[field], self.current_line)
-        return eq_entry
+        return 0 <= eq_entry[field] <= 59
 
     def check_second(self, field, eq_entry):
         """
-        Return an eq_entry checking if second is included
-        in a desired range, raises an exception in case of failed
-        check.
+        Return a bool stating that a check is applied,
+        if the non compulsory field second doesn't pass
+        the check an empty string is placed instead
+        of the value in the eq_entry.
         """
 
         if not 0 <= eq_entry[field] <= 59:
             eq_entry[field] = EqEntryReader.EMPTY_STRING
-        return eq_entry
+        return True
 
     def check_longitude(self, field, eq_entry):
         """
-        Return an eq_entry checking if longitude is included
-        in a desired range, raises an exception in case of failed
-        check.
+        Return a bool stating if check is passed.
         """
 
-        if not -180 <= eq_entry[field] <= 180:
-            raise EqEntryValidationError(field,
-                    eq_entry[field], self.current_line)
-        return eq_entry
+        return -180 <= eq_entry[field] <= 180
 
     def check_latitude(self, field, eq_entry):
         """
-        Return an eq_entry checking if latitude is included
-        in a desired range, raises an exception in case of failed
-        check.
+        Return a bool stating if check is passed.
         """
 
-        if not -90 <= eq_entry[field] <= 90:
-            raise EqEntryValidationError(field,
-                    eq_entry[field], self.current_line)
-        return eq_entry
+        return -90 <= eq_entry[field] <= 90
 
     def check_epicentre_error_location(self, field, eq_entry):
         """
-        Return an eq_entry checking if the field ErrorStrike is included
-        in a desired range, if only one of three fields constituting an
-        epicentre error location (ErrorStrike, SemiMajor90, SemiMinor90)
-        is not valid or without value, in all fields is placed an empty
-        string.
+        Return a bool stating that some checks are applied,
+        if one of the three non compulsory fields doesn't pass
+        it's own check an empty string is placed instead
+        of the values in the three correlated fields
+        (i.e. ErrorStrike, SemiMinor90, SemiMajor90).
         """
 
         if not 0 <= eq_entry[field] <= 360 or \
@@ -311,7 +281,7 @@ class EqEntryReader(object):
             eq_entry['SemiMinor90'] = eq_entry['SemiMajor90'] \
             = eq_entry[field] = EqEntryReader.EMPTY_STRING
 
-        return eq_entry
+        return True
 
 
 class EqEntryValidationError(Exception):
