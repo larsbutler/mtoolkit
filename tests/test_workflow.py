@@ -19,27 +19,37 @@
 
 import unittest
 
-from mtoolkit.workflow import Pipeline, DuplicatedStepError
+from mtoolkit.workflow import Pipeline
 
 class PipelineTestCase(unittest.TestCase):
 
 
 
     def setUp(self):
-        def square_step(x):
+
+        def square_job(x):
             return x*x
 
-        self.pipeline = Pipeline('preprocessing step')
-        self.step_name = 'square(x)'
-        self.step_callable = square_step
+        def double_job(x):
+            return 2*x
 
-    def test_add_processing_step(self):
-        self.pipeline.add_step(self.step_name, self.step_callable)
-        self.assertEqual(self.pipeline.steps[self.step_name].func,
-                self.step_callable)
+        self.square_job = square_job
+        self.double_job = double_job
+        self.pipeline_name = 'square pipeline'
+        self.working_data = 'number'
+        self.context = {self.working_data: 2}
+        self.pipeline = Pipeline(self.pipeline_name, self.context)
 
-    def test_adding_a_duplicate_step_raise_exception(self):
-        self.pipeline.add_step(self.step_name, self.step_callable)
-        self.assertRaises(DuplicatedStepError,
-                self.pipeline.add_step, self.step_name, self.step_callable)
 
+    def test_add_job(self):
+        self.pipeline.add_job(self.square_job, self.working_data)
+        self.pipeline.add_job(self.double_job, self.working_data)
+
+        self.assertEqual(self.square_job, self.pipeline.jobs[0].job)
+        self.assertEqual(self.double_job, self.pipeline.jobs[1].job)
+
+    def test_run_jobs(self):
+        self.pipeline.add_job(self.square_job, self.working_data)
+        self.pipeline.add_job(self.double_job, self.working_data)
+        self.pipeline.run()
+        self.assertEqual(8, self.pipeline.context[self.working_data])

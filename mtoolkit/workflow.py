@@ -17,31 +17,29 @@
 # version 3 along with OpenQuake. If not, see
 # <http://www.gnu.org/licenses/lgpl-3.0.txt> for a copy of the LGPLv3 License.
 
-from collections import OrderedDict
 
 class Pipeline(object):
 
-    def __init__(self, name):
+    def __init__(self, name, context):
         self.name = name
-        self.steps = OrderedDict()
+        self.jobs = []
+        self.context = context
 
-    def add_step(self, name, func):
-        try:
-            self.steps[name]
-            raise DuplicatedStepError(name)
-        except KeyError:
-            self.steps[name] = Step(func)
+    def add_job(self, a_callable, working_data):
+        new_job = Job(a_callable, working_data)
+        self.jobs.append(new_job)
 
-
-class Step(object):
-
-    def __init__(self, func):
-        self.func = func
+    def run(self):
+        for job in self.jobs:
+            self.context[job.working_data] = job.execute(
+                self.context[job.working_data])
 
 
-class DuplicatedStepError(Exception):
+class Job(object):
 
-    def __init__(self, step):
-        msg = "Duplicated step error with step name: %s " % step
-        Exception.__init__(self, msg)
-        self.args = (step,)
+    def __init__(self, a_callable, working_data):
+        self.job = a_callable
+        self.working_data = working_data
+
+    def execute(self, data):
+        return self.job(data)
