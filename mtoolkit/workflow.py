@@ -23,6 +23,7 @@ to process a series of jobs in a predetermined
 order. The order is determined by the queue of jobs.
 """
 
+
 class Pipeline(object):
     """
     Pipeline allows to create a queue of
