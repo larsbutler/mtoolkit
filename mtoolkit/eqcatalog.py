@@ -141,7 +141,7 @@ class EqEntryReader(object):
         csv_reader = CsvReader(self.eq_entries_source)
         field_names = csv_reader.fieldnames
         for self.current_line, eq_line in enumerate(
-            csv_reader.read(), start=2):
+            csv_reader.read(), start=2):  # eq definitions start at line 2
             dict_fields_values = dict(zip(field_names, eq_line))
             eq_entry = self.convert_values(dict_fields_values)
             for field in eq_entry.keys():

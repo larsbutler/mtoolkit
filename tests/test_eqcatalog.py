@@ -24,6 +24,16 @@ EqEntryValidationError
 
 from tests.test_utils import get_data_path, DATA_DIR, FILE_NAME_ERROR
 
+FIELDNAMES = ['eventID', 'Agency', 'Identifier',
+              'year', 'month', 'day',
+              'hour', 'minute', 'second',
+              'timeError', 'longitude', 'latitude',
+              'SemiMajor90', 'SemiMinor90', 'ErrorStrike',
+              'depth', 'depthError', 'Mw',
+              'sigmaMw', 'Ms', 'sigmaMs',
+              'mb', 'sigmamb', 'ML',
+              'sigmaML']
+
 
 class CsvReaderTestCase(unittest.TestCase):
 
@@ -31,16 +41,6 @@ class CsvReaderTestCase(unittest.TestCase):
         self.correct_filename = get_data_path('ISC_small_data.csv', DATA_DIR)
 
         self.csv_reader = CsvReader(self.correct_filename)
-
-        self.fieldnames = ['eventID', 'Agency', 'Identifier',
-                            'year', 'month', 'day',
-                            'hour', 'minute', 'second',
-                            'timeError', 'longitude', 'latitude',
-                            'SemiMajor90', 'SemiMinor90', 'ErrorStrike',
-                            'depth', 'depthError', 'Mw',
-                            'sigmaMw', 'Ms', 'sigmaMs',
-                            'mb', 'sigmamb', 'ML',
-                            'sigmaML']
 
         self.first_data_row = [
         '1', 'AAA', '20000102034913',
@@ -57,7 +57,7 @@ class CsvReaderTestCase(unittest.TestCase):
         self.assertRaises(IOError, CsvReader, FILE_NAME_ERROR)
 
     def test_get_csv_fieldnames(self):
-        self.assertEqual(self.fieldnames, self.csv_reader.fieldnames)
+        self.assertEqual(FIELDNAMES, self.csv_reader.fieldnames)
 
     def test_number_read_lines(self):
         expected_num_lines = 10
@@ -73,14 +73,6 @@ class CsvReaderTestCase(unittest.TestCase):
 class EqEntryReaderTestCase(unittest.TestCase):
 
     def setUp(self):
-        self.fieldnames = ['eventID', 'Agency', 'Identifier',
-                            'year', 'month', 'day',
-                            'hour', 'minute', 'second',
-                            'timeError', 'longitude', 'latitude',
-                            'SemiMajor90', 'SemiMinor90', 'ErrorStrike',
-                            'depth', 'depthError', 'Mw',
-                            'sigmaMw', 'Ms', 'sigmaMs',
-                            'mb', 'sigmamb', 'ML', 'sigmaML']
 
         self.first_data_row = [1, 'AAA', 20000102034913,
                                 2000, 01, 02,
@@ -103,43 +95,11 @@ class EqEntryReaderTestCase(unittest.TestCase):
         self.eq_reader = EqEntryReader(get_data_path('ISC_small_data.csv',
                     DATA_DIR))
 
-        self.to_int = ['eventID', 'Identifier', 'year', 'month',
-                'day', 'hour', 'minute']
-
-        self.to_float = ['second', 'timeError', 'longitude',
-                'latitude', 'SemiMajor90', 'SemiMinor90',
-                'ErrorStrike', 'depth', 'depthError',
-                'Mw', 'sigmaMw', 'Ms',
-                'sigmaMs',  'mb', 'sigmamb',
-                'ML', 'sigmaML']
-
     def test_generated_eq_entry(self):
-        first_eq_entry = dict(zip(self.fieldnames, self.first_data_row))
+        first_eq_entry = dict(zip(FIELDNAMES, self.first_data_row))
 
         self.assertEqual(first_eq_entry,
             self.eq_reader.read().next())
-
-    def test_convert_eq_values(self):
-        eq_entry_to_convert = dict(zip(self.fieldnames,
-            self.data_row_to_convert))
-
-        eq_entry_converted = {'eventID': 2, 'Agency': 'AAA',
-                             'Identifier': 20000105132157, 'year': 2000,
-                             'month': 1, 'day': 5,
-                             'hour': 13, 'minute': 21,
-                             'second': 57.0, 'timeError': 0.10,
-                             'longitude': 11.988, 'latitude': 44.318,
-                             'SemiMajor90': 0.77, 'SemiMinor90': 0.25,
-                             'ErrorStrike': 315.0, 'depth': 7.9,
-                             'depthError': 0.5, 'Mw': 3.89,
-                             'sigmaMw': 0.199, 'Ms':
-                                EqEntryReader.EMPTY_STRING,
-                             'sigmaMs': EqEntryReader.EMPTY_STRING, 'mb': 3.8,
-                             'sigmamb': 0.1, 'ML': EqEntryReader.EMPTY_STRING,
-                             'sigmaML': EqEntryReader.EMPTY_STRING}
-
-        self.assertEqual(eq_entry_converted,
-                self.eq_reader.convert_values(eq_entry_to_convert))
 
     def test_an_incorrect_conversion_raise_exception(self):
         dict_bad_eventid_value = {'eventID': 'a'}
@@ -210,7 +170,7 @@ class EqEntryReaderTestCase(unittest.TestCase):
 
     def test_check_minute(self):
         field_name = 'minute'
-        invalid_minute = '60'
+        invalid_minute = 60
         eq_entry = {field_name: invalid_minute}
 
         self.assertFalse(self.eq_reader.check_minute(field_name, eq_entry))
