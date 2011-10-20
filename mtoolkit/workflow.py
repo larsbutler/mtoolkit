@@ -17,29 +17,40 @@
 # version 3 along with OpenQuake. If not, see
 # <http://www.gnu.org/licenses/lgpl-3.0.txt> for a copy of the LGPLv3 License.
 
+"""
+The purpose of this module is to provide objects
+to process a series of jobs in a predetermined
+order. The order is determined by the queue of jobs.
+"""
 
 class Pipeline(object):
+    """
+    Pipeline allows to create a queue of
+    jobs and execute them in order.
+    """
 
-    def __init__(self, name, context):
+    def __init__(self, name):
+        """
+        Initialize a pipeline object having
+        attributes: name and jobs, a list
+        of callable objects.
+        """
+
         self.name = name
         self.jobs = []
-        self.context = context
 
-    def add_job(self, a_callable, working_data):
-        new_job = Job(a_callable, working_data)
-        self.jobs.append(new_job)
+    def add_job(self, a_callable):
+        """Append a new job the to queue"""
 
-    def run(self):
+        self.jobs.append(a_callable)
+
+    def run(self, context):
+        """
+        Run all the jobs in queue,
+        where each job take input data
+        and write the results
+        of calculation in context.
+        """
+
         for job in self.jobs:
-            self.context[job.working_data] = job.execute(
-                self.context[job.working_data])
-
-
-class Job(object):
-
-    def __init__(self, a_callable, working_data):
-        self.job = a_callable
-        self.working_data = working_data
-
-    def execute(self, data):
-        return self.job(data)
+            job(context)

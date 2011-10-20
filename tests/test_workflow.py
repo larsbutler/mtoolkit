@@ -21,35 +21,46 @@ import unittest
 
 from mtoolkit.workflow import Pipeline
 
+
 class PipelineTestCase(unittest.TestCase):
-
-
 
     def setUp(self):
 
-        def square_job(x):
-            return x*x
+        self.key = 'number'
 
-        def double_job(x):
-            return 2*x
+        def square_job(context):
+            value = context[self.key]
+            context[self.key] = value * value
+
+        def double_job(context):
+            value = context[self.key]
+            context[self.key] = 2 * value
 
         self.square_job = square_job
         self.double_job = double_job
         self.pipeline_name = 'square pipeline'
-        self.working_data = 'number'
-        self.context = {self.working_data: 2}
-        self.pipeline = Pipeline(self.pipeline_name, self.context)
-
+        self.context = {self.key: 2}
+        self.pipeline = Pipeline(self.pipeline_name)
 
     def test_add_job(self):
-        self.pipeline.add_job(self.square_job, self.working_data)
-        self.pipeline.add_job(self.double_job, self.working_data)
+        self.pipeline.add_job(self.square_job)
+        self.pipeline.add_job(self.double_job)
 
-        self.assertEqual(self.square_job, self.pipeline.jobs[0].job)
-        self.assertEqual(self.double_job, self.pipeline.jobs[1].job)
+        self.assertEqual(self.pipeline_name, self.pipeline.name)
+        self.assertEqual(self.square_job, self.pipeline.jobs[0])
+        self.assertEqual(self.double_job, self.pipeline.jobs[1])
 
     def test_run_jobs(self):
-        self.pipeline.add_job(self.square_job, self.working_data)
-        self.pipeline.add_job(self.double_job, self.working_data)
-        self.pipeline.run()
-        self.assertEqual(8, self.pipeline.context[self.working_data])
+        self.pipeline.add_job(self.square_job)
+        self.pipeline.add_job(self.double_job)
+        self.pipeline.run(self.context)
+
+        self.assertEqual(8, self.context[self.key])
+
+        # Change jobs order
+        self.pipeline.jobs.reverse()
+        # Reset context to a base value
+        self.context[self.key] = 2
+        self.pipeline.run(self.context)
+
+        self.assertEqual(16, self.context[self.key])
