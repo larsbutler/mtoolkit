@@ -17,19 +17,17 @@
 # version 3 along with OpenQuake. If not, see
 # <http://www.gnu.org/licenses/lgpl-3.0.txt> for a copy of the LGPLv3 License.
 
-import os
+"""
+The purpose of this module is to provide functions
+which tackle specific job.
+"""
 
-DATA_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), 'data'))
-
-SCHEMA_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__),
-        '../nrml/schema'))
-
-ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+import yaml
 
 
-FILE_NAME_ERROR = "Unknown filename"
+def load_config_file(context):
+    """Load configuration options from config file"""
 
+    config_file = open(context['config_filename'], 'r')
+    context['config'] = yaml.load(config_file)
 
-def get_data_path(filename, dirname):
-    """Return the data path of files used in test."""
-    return os.path.join(dirname, filename)

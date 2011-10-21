@@ -44,9 +44,9 @@ preprocessing_steps:
 
 GardnerKnopoff: {
   # Possible values: GardnerKnopoff, Uhrhammer, Gruenthal.
-  time_dist_windows:
+  time_dist_windows: no,
 
   # float >= 0 proportion of aftershock time windows 
   # to use to search for foreshock.
-  foreshock_time_window: 
+  foreshock_time_window: 0
 }
