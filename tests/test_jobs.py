@@ -24,6 +24,7 @@ from mtoolkit.jobs import load_config_file
 
 from tests.test_utils import get_data_path, ROOT_DIR
 
+
 class JobsTestCase(unittest.TestCase):
 
     def setUp(self):
@@ -35,7 +36,8 @@ class JobsTestCase(unittest.TestCase):
         expected_config_dict = {
             'apply_processing_steps': None,
             'pprocessing_result_file': 'path_to_file',
-            'GardnerKnopoff': {'time_dist_windows': False, 'foreshock_time_window': 0},
+            'GardnerKnopoff': {'time_dist_windows': False,
+                    'foreshock_time_window': 0},
             'result_file': 'path_to_file',
             'eq_catalog_file': 'path_to_file',
             'preprocessing_steps': ['GardnerKnopoff'],

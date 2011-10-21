@@ -30,4 +30,3 @@ def load_config_file(context):
 
     config_file = open(context['config_filename'], 'r')
     context['config'] = yaml.load(config_file)
-
