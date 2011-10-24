@@ -20,9 +20,9 @@
 
 import unittest
 
-from mtoolkit.jobs import load_config_file
+from mtoolkit.jobs import load_config_file, read_eq_catalog
 
-from tests.test_utils import get_data_path, ROOT_DIR
+from tests.test_utils import get_data_path, ROOT_DIR, DATA_DIR
 
 
 class JobsTestCase(unittest.TestCase):
@@ -30,6 +30,8 @@ class JobsTestCase(unittest.TestCase):
     def setUp(self):
         self.context = {'config_filename': get_data_path(
             'config.yml', ROOT_DIR)}
+        self.eq_catalog_filename = get_data_path(
+            'ISC_small_data.csv', DATA_DIR)
 
     def test_load_config_file(self):
         expected_config_dict = {
@@ -45,3 +47,21 @@ class JobsTestCase(unittest.TestCase):
         load_config_file(self.context)
 
         self.assertEqual(expected_config_dict, self.context['config'])
+
+    def test_read_eq_catalog(self):
+        load_config_file(self.context)
+        self.context['config']['eq_catalog_file'] = self.eq_catalog_filename
+        expected_first_eq_entry = {'eventID': 1, 'Agency': 'AAA', 'month': 1,
+                'depthError': 0.5, 'second': 13.0, 'SemiMajor90': 2.43,
+                'year': 2000, 'ErrorStrike': 298.0, 'timeError': 0.02,
+                'sigmamb': '', 'latitude': 44.368, 'sigmaMw': 0.355,
+                'sigmaMs': '', 'Mw': 1.71, 'Ms': '',
+                'Identifier': 20000102034913, 'day': 2, 'minute': 49,
+                'hour': 3, 'mb': '', 'SemiMinor90': 1.01, 'longitude': 7.282,
+                'depth': 9.3, 'ML': 1.7, 'sigmaML': 0.1}
+
+        read_eq_catalog(self.context)
+
+        self.assertEqual(10, len(self.context['eq_catalog']))
+        self.assertEqual(expected_first_eq_entry,
+                self.context['eq_catalog'][0])

@@ -24,9 +24,21 @@ which tackle specific job.
 
 import yaml
 
+from mtoolkit.eqcatalog import EqEntryReader
+
 
 def load_config_file(context):
     """Load configuration options from config file"""
 
     config_file = open(context['config_filename'], 'r')
     context['config'] = yaml.load(config_file)
+
+
+def read_eq_catalog(context):
+    """Create eq entries by reading an eq catalog"""
+
+    reader = EqEntryReader(context['config']['eq_catalog_file'])
+    eq_entries = []
+    for eq_entry in reader.read():
+        eq_entries.append(eq_entry)
+    context['eq_catalog'] = eq_entries
