@@ -29,8 +29,7 @@ class JobsTestCase(unittest.TestCase):
 
     def setUp(self):
         self.context = {'config_filename': get_data_path(
-            'config.yml', ROOT_DIR),
-                        'config': {}}
+            'config.yml', ROOT_DIR)}
 
     def test_load_config_file(self):
         expected_config_dict = {
