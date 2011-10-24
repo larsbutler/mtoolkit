@@ -19,8 +19,11 @@
 
 
 import unittest
+import numpy as np
 
-from mtoolkit.jobs import load_config_file, read_eq_catalog
+from mtoolkit.eqcatalog import EqEntryReader
+from mtoolkit.jobs import load_config_file, read_eq_catalog, apply_declustering
+from mtoolkit.declustering import gardner_knopoff_decluster
 
 from tests.test_utils import get_data_path, ROOT_DIR, DATA_DIR
 
@@ -65,3 +68,32 @@ class JobsTestCase(unittest.TestCase):
         self.assertEqual(10, len(self.context['eq_catalog']))
         self.assertEqual(expected_first_eq_entry,
                 self.context['eq_catalog'][0])
+
+    def test_apply_declustering(self):
+        #Reading eq catalog
+        reader = EqEntryReader(self.eq_catalog_filename)
+        eq_entries = []
+        for eq_entry in reader.read():
+            eq_entries.append(eq_entry)
+
+        #Creating numpy matrix
+        matrix = []
+        attributes = ['year', 'month', 'day', 'longitude', 'latitude', 'Mw']
+        for eq_entry in eq_entries:
+            matrix.append([eq_entry[attribute] for attribute in attributes])
+        numpy_matrix = np.array(matrix)
+
+        #Applying declustering
+        vcl, vmain_shock, flag_vector = gardner_knopoff_decluster(numpy_matrix)
+
+        load_config_file(self.context)
+        #eq_catalog_file is undefined in the config file
+        self.context['config']['eq_catalog_file'] = self.eq_catalog_filename
+        read_eq_catalog(self.context)
+        apply_declustering(self.context)
+
+        self.assertTrue(np.array_equal(vcl, self.context['vcl']))
+        self.assertTrue(np.array_equal(vmain_shock,
+                self.context['vmain_shock']))
+        self.assertTrue(np.array_equal(flag_vector,
+                self.context['flag_vector']))
