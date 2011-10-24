@@ -29,8 +29,7 @@ class JobsTestCase(unittest.TestCase):
 
     def setUp(self):
         self.context = {'config_filename': get_data_path(
-            'config.yml', ROOT_DIR),
-                        'config': {}}
+            'config.yml', ROOT_DIR)}
         self.eq_catalog_filename = get_data_path(
             'ISC_small_data.csv', DATA_DIR)
 
