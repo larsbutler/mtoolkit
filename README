@@ -12,3 +12,5 @@ The toolkit will then output the complete PSHA source model in the nrml format.
 # REQUIREMENTS
 
 1) Nose
+2) PyYAML
+3) Numpy
