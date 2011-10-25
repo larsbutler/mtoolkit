@@ -32,7 +32,8 @@ class JobsTestCase(unittest.TestCase):
 
     def setUp(self):
         self.context = {'config_filename': get_data_path(
-            'config.yml', ROOT_DIR)}
+            'config.yml', ROOT_DIR),
+            'config': {}}
         self.eq_catalog_filename = get_data_path(
             'ISC_small_data.csv', DATA_DIR)
 
@@ -52,7 +53,6 @@ class JobsTestCase(unittest.TestCase):
         self.assertEqual(expected_config_dict, self.context['config'])
 
     def test_read_eq_catalog(self):
-        load_config_file(self.context)
         self.context['config']['eq_catalog_file'] = self.eq_catalog_filename
         expected_first_eq_entry = {'eventID': 1, 'Agency': 'AAA', 'month': 1,
                 'depthError': 0.5, 'second': 13.0, 'SemiMajor90': 2.43,
