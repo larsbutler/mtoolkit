@@ -19,8 +19,10 @@
 
 
 import unittest
+import numpy as np
 
-from mtoolkit.jobs import load_config_file, read_eq_catalog
+from mtoolkit.jobs import load_config_file, read_eq_catalog, apply_declustering
+from mtoolkit.declustering import gardner_knopoff_decluster
 
 from tests.test_utils import get_data_path, ROOT_DIR, DATA_DIR
 
@@ -65,3 +67,22 @@ class JobsTestCase(unittest.TestCase):
         self.assertEqual(10, len(self.context['eq_catalog']))
         self.assertEqual(expected_first_eq_entry,
                 self.context['eq_catalog'][0])
+
+    def test_apply_declustering(self):
+        eq_entry = {'year': 2000,
+                    'month': 1,
+                    'day': 2,
+                    'longitude': 7.282,
+                    'latitude': 44.368,
+                    'Mw': 1.71}
+        numpy_matrix = np.array([[2000, 1, 2, 7.282, 44.368, 1.71]])
+        vcl, vmain_shock, flag_vector = gardner_knopoff_decluster(numpy_matrix)
+
+        self.context['eq_catalog'] = [eq_entry]
+        apply_declustering(self.context)
+
+        self.assertTrue(np.array_equal(vcl, self.context['vcl']))
+        self.assertTrue(np.array_equal(vmain_shock,
+                self.context['vmain_shock']))
+        self.assertTrue(np.array_equal(flag_vector,
+                self.context['flag_vector']))

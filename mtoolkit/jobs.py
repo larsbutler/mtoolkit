@@ -23,8 +23,10 @@ which tackle specific job.
 """
 
 import yaml
+import numpy as np
 
 from mtoolkit.eqcatalog import EqEntryReader
+from mtoolkit.declustering import  gardner_knopoff_decluster
 
 
 def load_config_file(context):
@@ -42,3 +44,18 @@ def read_eq_catalog(context):
     for eq_entry in reader.read():
         eq_entries.append(eq_entry)
     context['eq_catalog'] = eq_entries
+
+
+def apply_declustering(context):
+    """Apply declustering algorithm to the eq catalog"""
+
+    matrix = []
+    attributes = ['year', 'month', 'day', 'longitude', 'latitude', 'Mw']
+    for eq_entry in context['eq_catalog']:
+        matrix.append([eq_entry[attribute] for attribute in attributes])
+    numpy_matrix = np.array(matrix)
+    vcl, vmain_shock, flag_vector = gardner_knopoff_decluster(numpy_matrix)
+
+    context['vcl'] = vcl
+    context['vmain_shock'] = vmain_shock
+    context['flag_vector'] = flag_vector
