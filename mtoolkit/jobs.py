@@ -22,28 +22,20 @@ The purpose of this module is to provide functions
 which tackle specific job.
 """
 
-import yaml
 import numpy as np
 
 from mtoolkit.eqcatalog import EqEntryReader
 from mtoolkit.declustering import  gardner_knopoff_decluster
 
 
-def load_config_file(context):
-    """Load configuration options from config file"""
-
-    config_file = open(context['config_filename'], 'r')
-    context['config'] = yaml.load(config_file)
-
-
 def read_eq_catalog(context):
     """Create eq entries by reading an eq catalog"""
 
-    reader = EqEntryReader(context['config']['eq_catalog_file'])
+    reader = EqEntryReader(context.config['eq_catalog_file'])
     eq_entries = []
     for eq_entry in reader.read():
         eq_entries.append(eq_entry)
-    context['eq_catalog'] = eq_entries
+    context.eq_catalog = eq_entries
 
 
 def apply_declustering(context):
@@ -51,11 +43,11 @@ def apply_declustering(context):
 
     matrix = []
     attributes = ['year', 'month', 'day', 'longitude', 'latitude', 'Mw']
-    for eq_entry in context['eq_catalog']:
+    for eq_entry in context.eq_catalog:
         matrix.append([eq_entry[attribute] for attribute in attributes])
     numpy_matrix = np.array(matrix)
     vcl, vmain_shock, flag_vector = gardner_knopoff_decluster(numpy_matrix)
 
-    context['vcl'] = vcl
-    context['vmain_shock'] = vmain_shock
-    context['flag_vector'] = flag_vector
+    context.vcl = vcl
+    context.vmain_shock = vmain_shock
+    context.flag_vector = flag_vector

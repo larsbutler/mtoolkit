@@ -21,7 +21,8 @@
 import unittest
 import numpy as np
 
-from mtoolkit.jobs import load_config_file, read_eq_catalog, apply_declustering
+from mtoolkit.workflow import Context
+from mtoolkit.jobs import read_eq_catalog, apply_declustering
 from mtoolkit.declustering import gardner_knopoff_decluster
 
 from tests.test_utils import get_data_path, ROOT_DIR, DATA_DIR
@@ -30,29 +31,13 @@ from tests.test_utils import get_data_path, ROOT_DIR, DATA_DIR
 class JobsTestCase(unittest.TestCase):
 
     def setUp(self):
-        self.context = {'config_filename': get_data_path(
-            'config.yml', ROOT_DIR),
-            'config': {}}
+        self.context = Context(get_data_path(
+            'config.yml', ROOT_DIR))
         self.eq_catalog_filename = get_data_path(
             'ISC_small_data.csv', DATA_DIR)
 
-    def test_load_config_file(self):
-        expected_config_dict = {
-            'apply_processing_steps': None,
-            'pprocessing_result_file': 'path_to_file',
-            'GardnerKnopoff': {'time_dist_windows': False,
-                    'foreshock_time_window': 0},
-            'result_file': 'path_to_file',
-            'eq_catalog_file': 'path_to_file',
-            'preprocessing_steps': ['GardnerKnopoff'],
-            'source_model_file': 'path_to_file'}
-
-        load_config_file(self.context)
-
-        self.assertEqual(expected_config_dict, self.context['config'])
-
     def test_read_eq_catalog(self):
-        self.context['config']['eq_catalog_file'] = self.eq_catalog_filename
+        self.context.config['eq_catalog_file'] = self.eq_catalog_filename
         expected_first_eq_entry = {'eventID': 1, 'Agency': 'AAA', 'month': 1,
                 'depthError': 0.5, 'second': 13.0, 'SemiMajor90': 2.43,
                 'year': 2000, 'ErrorStrike': 298.0, 'timeError': 0.02,
@@ -64,9 +49,9 @@ class JobsTestCase(unittest.TestCase):
 
         read_eq_catalog(self.context)
 
-        self.assertEqual(10, len(self.context['eq_catalog']))
+        self.assertEqual(10, len(self.context.eq_catalog))
         self.assertEqual(expected_first_eq_entry,
-                self.context['eq_catalog'][0])
+                self.context.eq_catalog[0])
 
     def test_apply_declustering(self):
         eq_entry = {'year': 2000,
@@ -78,11 +63,11 @@ class JobsTestCase(unittest.TestCase):
         numpy_matrix = np.array([[2000, 1, 2, 7.282, 44.368, 1.71]])
         vcl, vmain_shock, flag_vector = gardner_knopoff_decluster(numpy_matrix)
 
-        self.context['eq_catalog'] = [eq_entry]
+        self.context.eq_catalog = [eq_entry]
         apply_declustering(self.context)
 
-        self.assertTrue(np.array_equal(vcl, self.context['vcl']))
+        self.assertTrue(np.array_equal(vcl, self.context.vcl))
         self.assertTrue(np.array_equal(vmain_shock,
-                self.context['vmain_shock']))
+                self.context.vmain_shock))
         self.assertTrue(np.array_equal(flag_vector,
-                self.context['flag_vector']))
+                self.context.flag_vector))

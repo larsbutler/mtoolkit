@@ -19,28 +19,51 @@
 
 import unittest
 
-from mtoolkit.workflow import Pipeline
+from mtoolkit.workflow import PipeLine, PipeLineBuilder, Context
+from mtoolkit.jobs import read_eq_catalog, apply_declustering
+
+from tests.test_utils import get_data_path, ROOT_DIR
+
+
+class ContextTestCase(unittest.TestCase):
+
+    def setUp(self):
+        self.context = Context(get_data_path('config.yml', ROOT_DIR))
+
+    def test_load_config_file(self):
+        expected_config_dict = {
+            'apply_processing_steps': None,
+            'pprocessing_result_file': 'path_to_file',
+            'GardnerKnopoff': {'time_dist_windows': False,
+                    'foreshock_time_window': 0},
+            'result_file': 'path_to_file',
+            'eq_catalog_file': 'path_to_file',
+            'preprocessing_steps': ['GardnerKnopoff'],
+            'source_model_file': 'path_to_file'}
+
+        self.assertEqual(expected_config_dict, self.context.config)
 
 
 class PipelineTestCase(unittest.TestCase):
 
     def setUp(self):
 
-        self.key = 'number'
-
         def square_job(context):
-            value = context[self.key]
-            context[self.key] = value * value
+            value = context.number
+            context.number = value * value
 
         def double_job(context):
-            value = context[self.key]
-            context[self.key] = 2 * value
+            value = context.number
+            context.number = 2 * value
 
         self.square_job = square_job
         self.double_job = double_job
+
         self.pipeline_name = 'square pipeline'
-        self.context = {self.key: 2}
-        self.pipeline = Pipeline(self.pipeline_name)
+        self.pipeline = PipeLine(self.pipeline_name)
+
+        self.context = Context(get_data_path('config.yml', ROOT_DIR))
+        self.context.number = 2
 
     def test_add_job(self):
         self.pipeline.add_job(self.square_job)
@@ -55,12 +78,28 @@ class PipelineTestCase(unittest.TestCase):
         self.pipeline.add_job(self.double_job)
         self.pipeline.run(self.context)
 
-        self.assertEqual(8, self.context[self.key])
+        self.assertEqual(8, self.context.number)
 
         # Change jobs order
         self.pipeline.jobs.reverse()
         # Reset context to a base value
-        self.context[self.key] = 2
+        self.context.number = 2
         self.pipeline.run(self.context)
 
-        self.assertEqual(16, self.context[self.key])
+        self.assertEqual(16, self.context.number)
+
+
+class PipeLineBuilderTestCase(unittest.TestCase):
+
+    def setUp(self):
+        self.pipeline_name = 'main workflow'
+        self.pipeline_builder = PipeLineBuilder(self.pipeline_name)
+        self.context = Context(get_data_path('config.yml', ROOT_DIR))
+
+    def test_build_pipeline(self):
+        expected_pipeline = PipeLine(self.pipeline_name)
+        expected_pipeline.add_job(read_eq_catalog)
+        expected_pipeline.add_job(apply_declustering)
+
+        self.assertEqual(expected_pipeline,
+            self.pipeline_builder.build(self.context))
