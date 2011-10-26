@@ -102,4 +102,4 @@ class PipeLineBuilderTestCase(unittest.TestCase):
         expected_pipeline.add_job(apply_declustering)
 
         self.assertEqual(expected_pipeline,
-            self.pipeline_builder.build(self.context))
+            self.pipeline_builder.build(self.context.config))

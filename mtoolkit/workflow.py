@@ -76,10 +76,10 @@ class PipeLineBuilder(object):
         self.name = name
         self.map_step_callable = {'GardnerKnopoff': apply_declustering}
 
-    def build(self, context):
+    def build(self, config):
         pipeline = PipeLine(self.name)
         pipeline.add_job(read_eq_catalog)
-        for step in context.config['preprocessing_steps']:
+        for step in config['preprocessing_steps']:
             pipeline.add_job(self.map_step_callable[step])
 
         return pipeline
