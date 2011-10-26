@@ -37,7 +37,7 @@ class ContextTestCase(unittest.TestCase):
             'GardnerKnopoff': {'time_dist_windows': False,
                     'foreshock_time_window': 0},
             'result_file': 'path_to_file',
-            'eq_catalog_file': 'path_to_file',
+            'eq_catalog_file': 'tests/data/ISC_correct.csv',
             'preprocessing_steps': ['GardnerKnopoff'],
             'source_model_file': 'path_to_file'}
 
