@@ -77,6 +77,14 @@ class PipeLineBuilder(object):
         self.map_step_callable = {'GardnerKnopoff': apply_declustering}
 
     def build(self, config):
+        """
+        Build method creates the pipeline by
+        assembling all the steps required.
+        The steps described in the config
+        could be preprocessing or processing
+        steps.
+        """
+
         pipeline = PipeLine(self.name)
         pipeline.add_job(read_eq_catalog)
         for step in config['preprocessing_steps']:
