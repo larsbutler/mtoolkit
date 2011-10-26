@@ -23,22 +23,30 @@ to process a series of jobs in a predetermined
 order. The order is determined by the queue of jobs.
 """
 
+import yaml
 
-class Pipeline(object):
+from mtoolkit.jobs import read_eq_catalog, apply_declustering
+
+
+class PipeLine(object):
     """
-    Pipeline allows to create a queue of
+    PipeLine allows to create a queue of
     jobs and execute them in order.
     """
 
     def __init__(self, name):
         """
-        Initialize a pipeline object having
+        Initialize a PipeLine object having
         attributes: name and jobs, a list
         of callable objects.
         """
 
         self.name = name
         self.jobs = []
+
+    def __eq__(self, other):
+        return self.name == other.name\
+                and self.jobs == other.jobs
 
     def add_job(self, a_callable):
         """Append a new job the to queue"""
@@ -55,3 +63,43 @@ class Pipeline(object):
 
         for job in self.jobs:
             job(context)
+
+
+class PipeLineBuilder(object):
+    """
+    PipeLineBuilder allows to build a PipeLine
+    by assembling all the required jobs/steps
+    specified in the config file.
+    """
+
+    def __init__(self, name):
+        self.name = name
+        self.map_step_callable = {'GardnerKnopoff': apply_declustering}
+
+    def build(self, config):
+        """
+        Build method creates the pipeline by
+        assembling all the steps required.
+        The steps described in the config
+        could be preprocessing or processing
+        steps.
+        """
+
+        pipeline = PipeLine(self.name)
+        pipeline.add_job(read_eq_catalog)
+        for step in config['preprocessing_steps']:
+            pipeline.add_job(self.map_step_callable[step])
+
+        return pipeline
+
+
+class Context(object):
+    """
+    Context allows to read the config file
+    and store preprocessing/processing steps
+    intermediate results.
+    """
+
+    def __init__(self, config_filename):
+        config_file = open(config_filename, 'r')
+        self.config = yaml.load(config_file)
