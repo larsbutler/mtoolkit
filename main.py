@@ -37,5 +37,5 @@ if __name__ == '__main__':
                 print CONTEXT.vmain_shock
                 print CONTEXT.flag_vector
             else:
-                print 'Error: nonexistent input file\n'
+                print 'Error: non existent input file\n'
                 PARSER.print_help()
