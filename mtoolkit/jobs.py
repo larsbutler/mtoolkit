@@ -25,7 +25,12 @@ which tackle specific job.
 import numpy as np
 
 from mtoolkit.eqcatalog import EqEntryReader
+from mtoolkit.smodel import NRMLReader
 from mtoolkit.declustering import  gardner_knopoff_decluster
+
+from tests.test_utils import get_data_path, SCHEMA_DIR
+
+NRML_SCHEMA_PATH = get_data_path('nrml.xsd', SCHEMA_DIR)
 
 
 def read_eq_catalog(context):
@@ -36,6 +41,17 @@ def read_eq_catalog(context):
     for eq_entry in reader.read():
         eq_entries.append(eq_entry)
     context.eq_catalog = eq_entries
+
+
+def read_source_model(context):
+    """Create smodel definitions by reading a source model"""
+
+    reader = NRMLReader(context.config['source_model_file'],
+            NRML_SCHEMA_PATH)
+    sm_definitions = []
+    for sm in reader.read():
+        sm_definitions.append(sm)
+    context.sm_definitions = sm_definitions
 
 
 def apply_declustering(context):
