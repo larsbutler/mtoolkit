@@ -20,10 +20,12 @@
 
 import unittest
 import numpy as np
+from shapely.geometry import Polygon
 
 from mtoolkit.workflow import Context
 from mtoolkit.jobs import read_eq_catalog, apply_declustering
-from mtoolkit.jobs import read_source_model
+from mtoolkit.jobs import read_source_model, processing_workflow_setup_gen, \
+_check_polygon
 from mtoolkit.declustering import gardner_knopoff_decluster
 
 from tests.test_utils import get_data_path, ROOT_DIR, DATA_DIR
@@ -116,3 +118,29 @@ class JobsTestCase(unittest.TestCase):
         self.assertEqual(2, len(self.context.sm_definitions))
         self.assertEqual(expected_first_sm_definition,
                 self.context.sm_definitions[0])
+
+    def test_a_bad_polygon_raises_exception(self):
+        polygon = Polygon([(1, 1), (1, 2), (2, 1), (2, 2)])
+
+        self.assertRaises(RuntimeError, _check_polygon, polygon)
+
+    def test_processing_workflow_setup(self):
+        self.context.config['apply_processing_steps'] = True
+
+        eq_internal_point = [2000, 1, 2, -0.25, 0.25]
+        eq_side_point = [2000, 1, 2, -0.5, 0.25]
+        eq_external_point = [2000, 1, 2, 0.5, 0.25]
+        numpy_matrix = np.array([eq_internal_point,
+                eq_side_point, eq_external_point])
+        self.context.vmain_shock = numpy_matrix
+
+        sm = {'area_boundary':
+            [-0.5, 0.0, -0.5, 0.5, 0.0, 0.5, 0.0, 0.0]}
+        self.context.sm_definitions = [sm]
+
+        first_sm, filtered_eq_sm = \
+            processing_workflow_setup_gen(self.context).next()
+
+        expected_numpy_matrix = np.array([eq_internal_point, eq_side_point])
+
+        self.assertTrue(np.array_equal(expected_numpy_matrix, filtered_eq_sm))

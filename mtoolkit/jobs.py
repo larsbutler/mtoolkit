@@ -23,6 +23,7 @@ which tackle specific job.
 """
 
 import numpy as np
+from shapely.geometry import Polygon, Point
 
 from mtoolkit.eqcatalog import EqEntryReader
 from mtoolkit.smodel import NRMLReader
@@ -67,3 +68,65 @@ def apply_declustering(context):
     context.vcl = vcl
     context.vmain_shock = vmain_shock
     context.flag_vector = flag_vector
+
+
+def _processing_steps_required(context):
+    """Return bool which states if processing steps are required"""
+
+    return context.config['apply_processing_steps']
+
+
+def _create_polygon(source_model):
+    """
+    Return a polygon object which is built
+    using a list of points contained in
+    the source model geometry
+    """
+
+    area_boundary_plist = source_model['area_boundary']
+    points_list = [(area_boundary_plist[i], area_boundary_plist[i + 1])
+            for i in xrange(0, len(area_boundary_plist), 2)]
+    return Polygon(points_list)
+
+
+def _check_polygon(polygon):
+    """Check polygon validity"""
+
+    if not polygon.is_valid:
+        raise RuntimeError('Polygon invalid wkt: %s' % polygon.wkt)
+
+
+def _filter_eq_entries(context, polygon):
+    """
+    Return a numpy matrix of filtered eq events.
+    The matrix contains all eq entries
+    contained in the given polygon
+    """
+
+    filtered_eq = []
+    longitude = 3
+    latitude = 4
+    for eq in context.vmain_shock:
+        eq_point = Point(eq[longitude], eq[latitude])
+        if polygon.contains(eq_point) or \
+            polygon.boundary.contains(eq_point):
+            filtered_eq.append(eq)
+    return np.array(filtered_eq)
+
+
+def processing_workflow_setup_gen(context):
+    """
+    Return the necessary input to start
+    the processing pipeline. The input
+    is constituted by a source model and
+    the eq events related to the source
+    model geometry in the form of a numpy
+    matrix
+    """
+
+    if _processing_steps_required(context):
+        for sm in context.sm_definitions:
+            polygon = _create_polygon(sm)
+            _check_polygon(polygon)
+            filtered_eq = _filter_eq_entries(context, polygon)
+            yield sm, filtered_eq
