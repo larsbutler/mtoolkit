@@ -128,10 +128,8 @@ class JobsTestCase(unittest.TestCase):
         self.context.config['apply_processing_steps'] = True
 
         eq_internal_point = [2000, 1, 2, -0.25, 0.25]
-        eq_side_point = [2000, 1, 2, -0.5, 0.25]
         eq_external_point = [2000, 1, 2, 0.5, 0.25]
-        numpy_matrix = np.array([eq_internal_point,
-                eq_side_point, eq_external_point])
+        numpy_matrix = np.array([eq_internal_point, eq_external_point])
         self.context.vmain_shock = numpy_matrix
 
         sm = {'area_boundary':
@@ -141,6 +139,7 @@ class JobsTestCase(unittest.TestCase):
         first_sm, filtered_eq_sm = \
             processing_workflow_setup_gen(self.context).next()
 
-        expected_numpy_matrix = np.array([eq_internal_point, eq_side_point])
+        expected_numpy_matrix = np.array([eq_internal_point])
 
         self.assertTrue(np.array_equal(expected_numpy_matrix, filtered_eq_sm))
+        self.assertEqual(sm, first_sm)

@@ -108,8 +108,7 @@ def _filter_eq_entries(context, polygon):
     latitude = 4
     for eq in context.vmain_shock:
         eq_point = Point(eq[longitude], eq[latitude])
-        if polygon.contains(eq_point) or \
-            polygon.boundary.contains(eq_point):
+        if polygon.contains(eq_point):
             filtered_eq.append(eq)
     return np.array(filtered_eq)
 
