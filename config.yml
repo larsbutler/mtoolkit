@@ -35,7 +35,6 @@ apply_processing_steps: #yes/no
 # order.
 preprocessing_steps:
 - GardnerKnopoff
-- Stepp
 
 # =========================================================
 # Preprocessing steps in detail
@@ -60,7 +59,7 @@ Stepp: {
   # Magnitude window of each step (in Mw units)
   magnitude_windows: 0.2,
   # Sensitivity parameter (see documentation)
-  sensitivity: 0.1
+  sensitivity: 0.1,
   # Increment Lock (fixes that the completeness magnitude will always increase further back in time)
   increment_lock: True 
 }  
