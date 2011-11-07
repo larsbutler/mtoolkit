@@ -24,8 +24,9 @@ which tackle specific job.
 
 import numpy as np
 
-from mtoolkit.eqcatalog import EqEntryReader
-from mtoolkit.declustering import  gardner_knopoff_decluster
+from mtoolkit.eqcatalog     import EqEntryReader
+from mtoolkit.declustering  import gardner_knopoff_decluster
+from mtoolkit.completeness  import stepp_analysis
 
 
 def read_eq_catalog(context):
@@ -51,3 +52,25 @@ def apply_declustering(context):
     context.vcl = vcl
     context.vmain_shock = vmain_shock
     context.flag_vector = flag_vector
+
+
+def stepp(context):
+    """
+    Apply step algorithm to the eq catalog
+    or to the numpy array built by a
+    declustering algorithm
+    """
+    year_index = 0
+    mw_index = 5
+    if hasattr(context, 'vmain_shock'):
+        context.completeness_table = stepp_analysis(
+            context.vmain_shock[: year_index],
+            context.vmain_shock[: mw_index],
+            context.config['Stepp']['magnitude_windows'],
+            context.config['Stepp']['time_window'],
+            context.config['Stepp']['sensitivity'],
+            context.config['Stepp']['increment_lock'])
+    else:
+        #context.completness_table = stepp_analysis()
+
+
