@@ -38,15 +38,22 @@ def read_eq_catalog(context):
         eq_entries.append(eq_entry)
     context.eq_catalog = eq_entries
 
-
-def gardner_knopoff(context):
-    """Apply gardner_knopoff declustering algorithm to the eq catalog"""
+def _create_numpy_array(context):
+    """
+    Create a numpy array representing
+    the eq catalog with selected attributes
+    """
 
     matrix = []
     attributes = ['year', 'month', 'day', 'longitude', 'latitude', 'Mw']
     for eq_entry in context.eq_catalog:
         matrix.append([eq_entry[attribute] for attribute in attributes])
-    numpy_matrix = np.array(matrix)
+    return np.array(matrix)
+
+def gardner_knopoff(context):
+    """Apply gardner_knopoff declustering algorithm to the eq catalog"""
+
+    numpy_matrix = _create_numpy_array(context)
     vcl, vmain_shock, flag_vector = gardner_knopoff_decluster(numpy_matrix,
             context.config['GardnerKnopoff']['time_dist_windows'],
             context.config['GardnerKnopoff']['foreshock_time_window'])
@@ -62,17 +69,25 @@ def stepp(context):
     or to the numpy array built by a
     declustering algorithm
     """
+
     year_index = 0
     mw_index = 5
+
     if hasattr(context, 'vmain_shock'):
+        print context.config['Stepp']
         context.completeness_table = stepp_analysis(
-            context.vmain_shock[: year_index],
-            context.vmain_shock[: mw_index],
+            context.vmain_shock[:, year_index],
+            context.vmain_shock[:, mw_index],
             context.config['Stepp']['magnitude_windows'],
             context.config['Stepp']['time_window'],
             context.config['Stepp']['sensitivity'],
             context.config['Stepp']['increment_lock'])
     else:
-        #context.completness_table = stepp_analysis()
-
-
+        context.numpy_matrix= _create_numpy_array(context)
+        context.completness_table = stepp_analysis(
+            context.numpy_matrix[:, year_index],
+            context.numpy_matrix[:, mw_index],
+            context.config['Stepp']['magnitude_windows'],
+            context.config['Stepp']['time_window'],
+            context.config['Stepp']['sensitivity'],
+            context.config['Stepp']['increment_lock'])
