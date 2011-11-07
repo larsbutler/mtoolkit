@@ -39,15 +39,17 @@ def read_eq_catalog(context):
     context.eq_catalog = eq_entries
 
 
-def apply_declustering(context):
-    """Apply declustering algorithm to the eq catalog"""
+def gardner_knopoff(context):
+    """Apply gardner_knopoff declustering algorithm to the eq catalog"""
 
     matrix = []
     attributes = ['year', 'month', 'day', 'longitude', 'latitude', 'Mw']
     for eq_entry in context.eq_catalog:
         matrix.append([eq_entry[attribute] for attribute in attributes])
     numpy_matrix = np.array(matrix)
-    vcl, vmain_shock, flag_vector = gardner_knopoff_decluster(numpy_matrix)
+    vcl, vmain_shock, flag_vector = gardner_knopoff_decluster(numpy_matrix,
+            context.config['GardnerKnopoff']['time_dist_windows'],
+            context.config['GardnerKnopoff']['foreshock_time_window'])
 
     context.vcl = vcl
     context.vmain_shock = vmain_shock

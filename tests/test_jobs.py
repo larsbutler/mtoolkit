@@ -22,7 +22,7 @@ import unittest
 import numpy as np
 
 from mtoolkit.workflow import Context
-from mtoolkit.jobs import read_eq_catalog, apply_declustering
+from mtoolkit.jobs import read_eq_catalog, gardner_knopoff
 from mtoolkit.declustering import gardner_knopoff_decluster
 
 from tests.test_utils import get_data_path, ROOT_DIR, DATA_DIR
@@ -53,7 +53,7 @@ class JobsTestCase(unittest.TestCase):
         self.assertEqual(expected_first_eq_entry,
                 self.context.eq_catalog[0])
 
-    def test_apply_declustering(self):
+    def test_gardner_knopoff(self):
         eq_entry = {'year': 2000,
                     'month': 1,
                     'day': 2,
@@ -61,10 +61,18 @@ class JobsTestCase(unittest.TestCase):
                     'latitude': 44.368,
                     'Mw': 1.71}
         numpy_matrix = np.array([[2000, 1, 2, 7.282, 44.368, 1.71]])
-        vcl, vmain_shock, flag_vector = gardner_knopoff_decluster(numpy_matrix)
+        time_dist_windows = 'Uhrhammer'
+        foreshock_time_window = 0.1
+        vcl, vmain_shock, flag_vector = gardner_knopoff_decluster(numpy_matrix,
+            time_dist_windows, foreshock_time_window)
 
         self.context.eq_catalog = [eq_entry]
-        apply_declustering(self.context)
+        self.context.config['GardnerKnopoff']['foreshock_time_window'] = \
+            foreshock_time_window
+        self.context.config['GardnerKnopoff']['time_dist_windows'] = \
+            time_dist_windows
+
+        gardner_knopoff(self.context)
 
         self.assertTrue(np.array_equal(vcl, self.context.vcl))
         self.assertTrue(np.array_equal(vmain_shock,

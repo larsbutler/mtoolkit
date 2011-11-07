@@ -20,7 +20,7 @@
 import unittest
 
 from mtoolkit.workflow import PipeLine, PipeLineBuilder, Context
-from mtoolkit.jobs import read_eq_catalog, apply_declustering
+from mtoolkit.jobs import read_eq_catalog, gardner_knopoff
 
 from tests.test_utils import get_data_path, ROOT_DIR
 
@@ -103,7 +103,7 @@ class PipeLineBuilderTestCase(unittest.TestCase):
     def test_build_pipeline(self):
         expected_pipeline = PipeLine(self.pipeline_name)
         expected_pipeline.add_job(read_eq_catalog)
-        expected_pipeline.add_job(apply_declustering)
+        expected_pipeline.add_job(gardner_knopoff)
 
         self.assertEqual(expected_pipeline,
             self.pipeline_builder.build(self.context.config))
