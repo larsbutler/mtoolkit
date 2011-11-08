@@ -129,8 +129,8 @@ class JobsTestCase(unittest.TestCase):
 
         eq_internal_point = [2000, 1, 2, -0.25, 0.25]
         eq_external_point = [2000, 1, 2, 0.5, 0.25]
-        numpy_matrix = np.array([eq_internal_point, eq_external_point])
-        self.context.vmain_shock = numpy_matrix
+        eq_events = np.array([eq_internal_point, eq_external_point])
+        self.context.vmain_shock = eq_events
 
         sm = {'area_boundary':
             [-0.5, 0.0, -0.5, 0.5, 0.0, 0.5, 0.0, 0.0]}
