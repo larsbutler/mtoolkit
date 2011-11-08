@@ -139,7 +139,7 @@ class JobsTestCase(unittest.TestCase):
         first_sm, filtered_eq_sm = \
             processing_workflow_setup_gen(self.context).next()
 
-        expected_numpy_matrix = np.array([eq_internal_point])
+        expected_eq_events = np.array([eq_internal_point])
 
-        self.assertTrue(np.array_equal(expected_numpy_matrix, filtered_eq_sm))
+        self.assertTrue(np.array_equal(expected_eq_events, filtered_eq_sm))
         self.assertEqual(sm, first_sm)
