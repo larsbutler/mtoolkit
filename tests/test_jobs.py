@@ -20,10 +20,14 @@
 
 import unittest
 import numpy as np
+from shapely.geometry import Polygon
 
 from mtoolkit.workflow import Context
+from mtoolkit.jobs import read_source_model, processing_workflow_setup_gen, \
+_check_polygon
 from mtoolkit.jobs import read_eq_catalog, gardner_knopoff
 from mtoolkit.jobs import _create_numpy_matrix
+from mtoolkit.declustering import gardner_knopoff_decluster
 
 from tests.test_utils import get_data_path, ROOT_DIR, DATA_DIR
 
@@ -35,6 +39,8 @@ class JobsTestCase(unittest.TestCase):
             'config.yml', ROOT_DIR))
         self.eq_catalog_filename = get_data_path(
             'ISC_small_data.csv', DATA_DIR)
+        self.smodel_filename = get_data_path(
+            'area_source_model.xml', DATA_DIR)
 
     def test_read_eq_catalog(self):
         self.context.config['eq_catalog_file'] = self.eq_catalog_filename
@@ -77,8 +83,48 @@ class JobsTestCase(unittest.TestCase):
         self.assertTrue(np.array_equal(expected_vcl, self.context.vcl))
         self.assertTrue(np.array_equal(expected_flag_vector,
                 self.context.flag_vector))
-        self.assertTrue(np.array_equal(expected_vmain_shock,
-                self.context.vmain_shock))
+
+    def test_read_smodel(self):
+        self.context.config['source_model_file'] = self.smodel_filename
+        expected_first_sm_definition = \
+            {'id_as': 'src_1',
+             'area_boundary':
+               [132.93, 42.85, 134.86,
+                41.82, 129.73, 38.38,
+                128.15, 40.35],
+             'rupture_rate_model': [
+               {'max_magnitude': 8.0,
+                'a_value_cumulative':
+                    3.1612436654341836,
+                'name': 'truncated_guten_richter',
+                'min_magnitude': 5.0,
+                'b_value': 0.7318999871612379},
+             {'name': 'focal_mechanism',
+              'nodal_planes': [
+                {'strike': 0.0,
+                 'rake': 0.0,
+                 'dip': 90.0,
+                 'id': 0},
+                {'strike': 12.0,
+                 'rake': 0.0,
+                 'dip': 40.0,
+                 'id': 1}],
+              'id': 'smi:fm1/0'}],
+             'tectonic_region':
+                'Active Shallow Crust',
+             'id_sm': 'sm1',
+             'rupture_depth_distribution': {
+                'depth': [15.0],
+                'magnitude': [5.0],
+                'name': 'rupture_depth_distrib'},
+             'hypocentral_depth': 15.0,
+             'type': 'area_source',
+             'name': 'Source 8.CH.3'}
+
+        read_source_model(self.context)
+        self.assertEqual(2, len(self.context.sm_definitions))
+        self.assertEqual(expected_first_sm_definition,
+                self.context.sm_definitions[0])
 
     def test_parameters_gardner_knopoff(self):
 
