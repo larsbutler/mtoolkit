@@ -57,7 +57,9 @@ class JobsTestCase(unittest.TestCase):
 
         self.context.config['eq_catalog_file'] = get_data_path(
             'declustering_input_test.csv', DATA_DIR)
-        self.context.config['GardnerKnopoff']['time_dist_windows'] = 0.5
+        self.context.config['GardnerKnopoff']['time_dist_windows'] = \
+                'GardnerKnopoff'
+        self.context.config['GardnerKnopoff']['foreshock_time_window'] = 0.5
 
         read_eq_catalog(self.context)
 
