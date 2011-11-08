@@ -79,3 +79,20 @@ class JobsTestCase(unittest.TestCase):
                 self.context.flag_vector))
         self.assertTrue(np.array_equal(expected_vmain_shock,
                 self.context.vmain_shock))
+
+    def test_parameters_gardner_knopoff(self):
+
+        self.context.config['eq_catalog_file'] = get_data_path(
+            'declustering_input_test.csv', DATA_DIR)
+        self.context.config['GardnerKnopoff']['time_dist_windows'] = \
+                'GardnerKnopoff'
+        self.context.config['GardnerKnopoff']['foreshock_time_window'] = 0.5
+
+        read_eq_catalog(self.context)
+
+        def mock(data, time_dist_windows, foreshock_time_window):
+            self.assertEquals("GardnerKnopoff", time_dist_windows)
+            self.assertEquals(0.5, foreshock_time_window)
+            return None, None, None
+
+        gardner_knopoff(self.context, alg=mock)

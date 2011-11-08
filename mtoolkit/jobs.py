@@ -47,10 +47,10 @@ def _create_numpy_matrix(context):
     return np.array(matrix)
 
 
-def gardner_knopoff(context):
+def gardner_knopoff(context, alg=gardner_knopoff_decluster):
     """Apply gardner_knopoff declustering algorithm to the eq catalog"""
 
-    vcl, vmain_shock, flag_vector = gardner_knopoff_decluster(
+    vcl, vmain_shock, flag_vector = alg(
             _create_numpy_matrix(context),
             context.config['GardnerKnopoff']['time_dist_windows'],
             context.config['GardnerKnopoff']['foreshock_time_window'])
