@@ -23,7 +23,7 @@ import numpy as np
 
 from mtoolkit.workflow import Context
 from mtoolkit.jobs import read_eq_catalog, gardner_knopoff
-from mtoolkit.declustering import gardner_knopoff_decluster
+from mtoolkit.jobs import _create_numpy_matrix
 
 from tests.test_utils import get_data_path, ROOT_DIR, DATA_DIR
 
@@ -54,28 +54,26 @@ class JobsTestCase(unittest.TestCase):
                 self.context.eq_catalog[0])
 
     def test_gardner_knopoff(self):
-        eq_entry = {'year': 2000,
-                    'month': 1,
-                    'day': 2,
-                    'longitude': 7.282,
-                    'latitude': 44.368,
-                    'Mw': 1.71}
-        numpy_matrix = np.array([[2000, 1, 2, 7.282, 44.368, 1.71]])
-        time_dist_windows = 'Uhrhammer'
-        foreshock_time_window = 0.1
-        vcl, vmain_shock, flag_vector = gardner_knopoff_decluster(numpy_matrix,
-            time_dist_windows, foreshock_time_window)
 
-        self.context.eq_catalog = [eq_entry]
-        self.context.config['GardnerKnopoff']['foreshock_time_window'] = \
-            foreshock_time_window
-        self.context.config['GardnerKnopoff']['time_dist_windows'] = \
-            time_dist_windows
+        self.context.config['eq_catalog_file'] = get_data_path(
+            'declustering_input_test.csv', DATA_DIR)
+        self.context.config['GardnerKnopoff']['time_dist_windows'] = 0.5
+
+        read_eq_catalog(self.context)
+
+        expected_vmain_shock = _create_numpy_matrix(self.context)
+        expected_vmain_shock = np.delete(expected_vmain_shock, [4, 10, 19], 0)
+
+        expected_vcl = np.array([0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0,
+            0, 0, 0, 0, 6])
+
+        expected_flag_vector = np.array([0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0,
+            0, 0, 0, 0, 0, 0, 1])
 
         gardner_knopoff(self.context)
 
-        self.assertTrue(np.array_equal(vcl, self.context.vcl))
-        self.assertTrue(np.array_equal(vmain_shock,
-                self.context.vmain_shock))
-        self.assertTrue(np.array_equal(flag_vector,
+        self.assertTrue(np.array_equal(expected_vcl, self.context.vcl))
+        self.assertTrue(np.array_equal(expected_flag_vector,
                 self.context.flag_vector))
+        self.assertTrue(np.array_equal(expected_vmain_shock,
+                self.context.vmain_shock))
