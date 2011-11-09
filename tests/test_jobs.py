@@ -125,6 +125,7 @@ class JobsTestCase(unittest.TestCase):
         expected_eq_events = np.array([eq_internal_point])
 
         self.assertTrue(np.array_equal(expected_eq_events, filtered_eq_sm))
+        self.assertEqual(sm, first_sm)
 
     def test_gardner_knopoff(self):
 
@@ -150,7 +151,6 @@ class JobsTestCase(unittest.TestCase):
         self.assertTrue(np.array_equal(expected_vcl, self.context.vcl))
         self.assertTrue(np.array_equal(expected_flag_vector,
                 self.context.flag_vector))
-
 
     def test_parameters_gardner_knopoff(self):
 
