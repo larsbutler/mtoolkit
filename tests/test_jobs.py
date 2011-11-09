@@ -23,8 +23,8 @@ import numpy as np
 from shapely.geometry import Polygon
 
 from mtoolkit.workflow import Context
-from mtoolkit.jobs import read_eq_catalog, read_source_model,\
-_create_numpy_matrix, gardner_knopoff, stepp, _check_polygon,\
+from mtoolkit.jobs import read_eq_catalog, read_source_model, \
+_create_numpy_matrix, gardner_knopoff, stepp, _check_polygon, \
 processing_workflow_setup_gen
 
 from tests.test_utils import get_data_path, ROOT_DIR, DATA_DIR
