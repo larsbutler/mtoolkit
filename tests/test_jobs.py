@@ -23,10 +23,9 @@ import numpy as np
 from shapely.geometry import Polygon
 
 from mtoolkit.workflow import Context
-from mtoolkit.jobs import read_source_model, processing_workflow_setup_gen, \
-_check_polygon
-from mtoolkit.jobs import read_eq_catalog, gardner_knopoff
-from mtoolkit.jobs import _create_numpy_matrix
+from mtoolkit.jobs import read_eq_catalog, read_source_model,\
+_create_numpy_matrix, gardner_knopoff, stepp, _check_polygon,\
+processing_workflow_setup_gen
 
 from tests.test_utils import get_data_path, ROOT_DIR, DATA_DIR
 
@@ -168,3 +167,56 @@ class JobsTestCase(unittest.TestCase):
             return None, None, None
 
         gardner_knopoff(self.context, alg=mock)
+
+    def test_stepp(self):
+        self.context.config['eq_catalog_file'] = get_data_path(
+            'completeness_input_test.csv', DATA_DIR)
+
+        self.context.config['Stepp']['time_window'] = 5
+        self.context.config['Stepp']['magnitude_windows'] = 0.1
+        self.context.config['Stepp']['sensitivity'] = 0.2
+        self.context.config['Stepp']['increment_lock'] = True
+
+        read_eq_catalog(self.context)
+
+        filtered_eq_events = np.array([
+                    [4.0, 1994.], [4.1, 1994.], [4.2, 1994.],
+                    [4.3, 1994.], [4.4, 1994.], [4.5, 1964.],
+                    [4.6, 1964.], [4.7, 1964.], [4.8, 1964.],
+                    [4.9, 1964.], [5.0, 1964.], [5.1, 1964.],
+                    [5.2, 1964.], [5.3, 1964.], [5.4, 1964.],
+                    [5.5, 1919.], [5.6, 1919.], [5.7, 1919.],
+                    [5.8, 1919.], [5.9, 1919.], [6.0, 1919.],
+                    [6.1, 1919.], [6.2, 1919.], [6.3, 1919.],
+                    [6.4, 1919.], [6.5, 1919.], [6.6, 1919.],
+                    [6.7, 1919.], [6.8, 1919.], [6.9, 1919.],
+                    [7.0, 1919.], [7.1, 1919.], [7.2, 1919.],
+                    [7.3, 1919.]])
+
+        stepp(self.context)
+        self.assertTrue(np.allclose(filtered_eq_events,
+                self.context.completeness_table))
+
+        gardner_knopoff(self.context)
+        stepp(self.context)
+        self.assertTrue(np.allclose(filtered_eq_events,
+                self.context.completeness_table))
+
+    def test_parameters_stepp(self):
+        self.context.config['eq_catalog_file'] = get_data_path(
+            'completeness_input_test.csv', DATA_DIR)
+
+        self.context.config['Stepp']['time_window'] = 5
+        self.context.config['Stepp']['magnitude_windows'] = 0.1
+        self.context.config['Stepp']['sensitivity'] = 0.2
+        self.context.config['Stepp']['increment_lock'] = True
+
+        read_eq_catalog(self.context)
+
+        def mock(year, mw, magnitude_windows, time_window, sensitivity, iloc):
+            self.assertEqual(time_window, 5)
+            self.assertEqual(magnitude_windows, 0.1)
+            self.assertEqual(sensitivity, 0.2)
+            self.assertTrue(iloc)
+
+        stepp(self.context, alg=mock)

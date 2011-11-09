@@ -79,6 +79,15 @@ def gardner_knopoff(context, alg=gardner_knopoff_decluster):
     context.flag_vector = flag_vector
 
 
+def a_declustering_was_executed(context):
+    """
+    Return True if a declustering
+    algorithm has been executed in
+    the pipeline
+    """
+    return hasattr(context, 'vmain_shock')
+
+
 def stepp(context, alg=stepp_analysis):
     """
     Apply step algorithm to the eq catalog
@@ -89,7 +98,7 @@ def stepp(context, alg=stepp_analysis):
     year_index = 0
     mw_index = 5
 
-    if hasattr(context, 'vmain_shock'):
+    if a_declustering_was_executed(context):
         context.completeness_table = alg(
             context.vmain_shock[:, year_index],
             context.vmain_shock[:, mw_index],
@@ -98,8 +107,8 @@ def stepp(context, alg=stepp_analysis):
             context.config['Stepp']['sensitivity'],
             context.config['Stepp']['increment_lock'])
     else:
-        context.numpy_matrix= _create_numpy_matrix(context)
-        context.completness_table = alg(
+        context.numpy_matrix = _create_numpy_matrix(context)
+        context.completeness_table = alg(
             context.numpy_matrix[:, year_index],
             context.numpy_matrix[:, mw_index],
             context.config['Stepp']['magnitude_windows'],
