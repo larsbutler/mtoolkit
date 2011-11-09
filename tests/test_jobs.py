@@ -27,7 +27,6 @@ from mtoolkit.jobs import read_source_model, processing_workflow_setup_gen, \
 _check_polygon
 from mtoolkit.jobs import read_eq_catalog, gardner_knopoff
 from mtoolkit.jobs import _create_numpy_matrix
-from mtoolkit.declustering import gardner_knopoff_decluster
 
 from tests.test_utils import get_data_path, ROOT_DIR, DATA_DIR
 
@@ -58,31 +57,6 @@ class JobsTestCase(unittest.TestCase):
         self.assertEqual(10, len(self.context.eq_catalog))
         self.assertEqual(expected_first_eq_entry,
                 self.context.eq_catalog[0])
-
-    def test_gardner_knopoff(self):
-
-        self.context.config['eq_catalog_file'] = get_data_path(
-            'declustering_input_test.csv', DATA_DIR)
-        self.context.config['GardnerKnopoff']['time_dist_windows'] = \
-                'GardnerKnopoff'
-        self.context.config['GardnerKnopoff']['foreshock_time_window'] = 0.5
-
-        read_eq_catalog(self.context)
-
-        expected_vmain_shock = _create_numpy_matrix(self.context)
-        expected_vmain_shock = np.delete(expected_vmain_shock, [4, 10, 19], 0)
-
-        expected_vcl = np.array([0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0,
-            0, 0, 0, 0, 6])
-
-        expected_flag_vector = np.array([0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0,
-            0, 0, 0, 0, 0, 0, 1])
-
-        gardner_knopoff(self.context)
-
-        self.assertTrue(np.array_equal(expected_vcl, self.context.vcl))
-        self.assertTrue(np.array_equal(expected_flag_vector,
-                self.context.flag_vector))
 
     def test_read_smodel(self):
         self.context.config['source_model_file'] = self.smodel_filename
@@ -125,6 +99,58 @@ class JobsTestCase(unittest.TestCase):
         self.assertEqual(2, len(self.context.sm_definitions))
         self.assertEqual(expected_first_sm_definition,
                 self.context.sm_definitions[0])
+
+    def test_a_bad_polygon_raises_exception(self):
+        polygon = Polygon([(1, 1), (1, 2), (2, 1), (2, 2)])
+
+        self.assertRaises(RuntimeError, _check_polygon, polygon)
+
+    def test_processing_workflow_setup(self):
+        self.context.config['apply_processing_steps'] = True
+
+        eq_internal_point = [2000, 1, 2, -0.25, 0.25]
+        eq_side_point = [2000, 1, 2, -0.5, 0.25]
+        eq_external_point = [2000, 1, 2, 0.5, 0.25]
+        eq_events = np.array([eq_internal_point,
+                eq_side_point, eq_external_point])
+        self.context.vmain_shock = eq_events
+
+        sm = {'area_boundary':
+            [-0.5, 0.0, -0.5, 0.5, 0.0, 0.5, 0.0, 0.0]}
+        self.context.sm_definitions = [sm]
+
+        first_sm, filtered_eq_sm = \
+            processing_workflow_setup_gen(self.context).next()
+
+        expected_eq_events = np.array([eq_internal_point])
+
+        self.assertTrue(np.array_equal(expected_eq_events, filtered_eq_sm))
+
+    def test_gardner_knopoff(self):
+
+        self.context.config['eq_catalog_file'] = get_data_path(
+            'declustering_input_test.csv', DATA_DIR)
+        self.context.config['GardnerKnopoff']['time_dist_windows'] = \
+                'GardnerKnopoff'
+        self.context.config['GardnerKnopoff']['foreshock_time_window'] = 0.5
+
+        read_eq_catalog(self.context)
+
+        expected_vmain_shock = _create_numpy_matrix(self.context)
+        expected_vmain_shock = np.delete(expected_vmain_shock, [4, 10, 19], 0)
+
+        expected_vcl = np.array([0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0,
+            0, 0, 0, 0, 6])
+
+        expected_flag_vector = np.array([0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0,
+            0, 0, 0, 0, 0, 0, 1])
+
+        gardner_knopoff(self.context)
+
+        self.assertTrue(np.array_equal(expected_vcl, self.context.vcl))
+        self.assertTrue(np.array_equal(expected_flag_vector,
+                self.context.flag_vector))
+
 
     def test_parameters_gardner_knopoff(self):
 
