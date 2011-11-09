@@ -79,7 +79,7 @@ def gardner_knopoff(context, alg=gardner_knopoff_decluster):
     context.flag_vector = flag_vector
 
 
-def stepp(context):
+def stepp(context, alg=stepp_analysis):
     """
     Apply step algorithm to the eq catalog
     or to the numpy array built by a
@@ -90,8 +90,7 @@ def stepp(context):
     mw_index = 5
 
     if hasattr(context, 'vmain_shock'):
-        print context.config['Stepp']
-        context.completeness_table = stepp_analysis(
+        context.completeness_table = alg(
             context.vmain_shock[:, year_index],
             context.vmain_shock[:, mw_index],
             context.config['Stepp']['magnitude_windows'],
@@ -99,8 +98,8 @@ def stepp(context):
             context.config['Stepp']['sensitivity'],
             context.config['Stepp']['increment_lock'])
     else:
-        context.numpy_matrix= _create_numpy_array(context)
-        context.completness_table = stepp_analysis(
+        context.numpy_matrix= _create_numpy_matrix(context)
+        context.completness_table = alg(
             context.numpy_matrix[:, year_index],
             context.numpy_matrix[:, mw_index],
             context.config['Stepp']['magnitude_windows'],
