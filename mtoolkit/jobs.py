@@ -56,7 +56,7 @@ def read_source_model(context):
     context.sm_definitions = sm_definitions
 
 
-def create_numpy_matrix(context):
+def create_catalog_matrix(context):
     """Create a numpy matrix according to fixed attributes"""
 
     matrix = []

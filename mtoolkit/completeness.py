@@ -22,6 +22,7 @@
 
 import numpy as np
 
+
 def stepp_analysis(year, mw, dm=0.1, dt=1, ttol=0.2, iloc=True):
     """
     Stepp function
@@ -51,7 +52,7 @@ def stepp_analysis(year, mw, dm=0.1, dt=1, ttol=0.2, iloc=True):
     nt = np.max(np.shape(T))
     TUB = endT * np.ones(nt)
     TLB = TUB - T
-    TRT = 1. / np.sqrt(T) # Poisson rate
+    TRT = 1. / np.sqrt(T)  # Poisson rate
 
     N = np.zeros((nt, ntb - 1))
     lamda = np.zeros((nt, ntb - 1))
@@ -75,8 +76,8 @@ def stepp_analysis(year, mw, dm=0.1, dt=1, ttol=0.2, iloc=True):
 
     diffT = (np.log10(TRT[1:]) - np.log10(TRT[:-1]))
     diffT = diffT / (np.log10(T[1:]) - np.log10(T[:-1]))
-    comp_length = np.zeros((ntb-1, 1))
-    tloc = np.zeros((ntb-1, 1), dtype=int)
+    comp_length = np.zeros((ntb - 1, 1))
+    tloc = np.zeros((ntb - 1, 1), dtype=int)
     ii = 0
     while ii < (ntb - 1):
         lamda[:, ii] = N[:, ii] / T
@@ -97,7 +98,7 @@ def stepp_analysis(year, mw, dm=0.1, dt=1, ttol=0.2, iloc=True):
             # No location passes test
             if ii > 0:
                 # Use previous value
-                tloc[ii] = tloc[ii-1]
+                tloc[ii] = tloc[ii - 1]
             else:
                 # Print warning
                 print "Fitting tolerance removed all data - change parameter"
