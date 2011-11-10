@@ -49,7 +49,7 @@ class ContextTestCase(unittest.TestCase):
         self.assertEqual(expected_config_dict, self.context.config)
 
 
-class PipelineTestCase(unittest.TestCase):
+class PipeLineTestCase(unittest.TestCase):
 
     def setUp(self):
 
