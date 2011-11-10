@@ -20,7 +20,8 @@
 import unittest
 
 from mtoolkit.workflow import PipeLine, PipeLineBuilder, Context
-from mtoolkit.jobs import read_eq_catalog, gardner_knopoff
+from mtoolkit.jobs import read_eq_catalog, create_catalog_matrix, \
+gardner_knopoff
 
 from tests.test_utils import get_data_path, ROOT_DIR
 
@@ -36,6 +37,10 @@ class ContextTestCase(unittest.TestCase):
             'pprocessing_result_file': 'path_to_file',
             'GardnerKnopoff': {'time_dist_windows': False,
                     'foreshock_time_window': 0},
+            'Stepp': {'increment_lock': True,
+            'magnitude_windows': 0.2,
+            'sensitivity': 0.1,
+            'time_window': 5},
             'result_file': 'path_to_file',
             'eq_catalog_file': 'tests/data/ISC_correct.csv',
             'preprocessing_steps': ['GardnerKnopoff'],
@@ -44,7 +49,7 @@ class ContextTestCase(unittest.TestCase):
         self.assertEqual(expected_config_dict, self.context.config)
 
 
-class PipelineTestCase(unittest.TestCase):
+class PipeLineTestCase(unittest.TestCase):
 
     def setUp(self):
 
@@ -99,6 +104,7 @@ class PipeLineBuilderTestCase(unittest.TestCase):
     def test_build_pipeline(self):
         expected_pipeline = PipeLine(self.pipeline_name)
         expected_pipeline.add_job(read_eq_catalog)
+        expected_pipeline.add_job(create_catalog_matrix)
         expected_pipeline.add_job(gardner_knopoff)
 
         self.assertEqual(expected_pipeline,
