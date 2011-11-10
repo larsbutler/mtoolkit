@@ -24,7 +24,7 @@ from shapely.geometry import Polygon
 
 from mtoolkit.workflow import Context
 from mtoolkit.jobs import read_eq_catalog, read_source_model, \
-_create_numpy_matrix, gardner_knopoff, stepp, _check_polygon, \
+create_numpy_matrix, gardner_knopoff, stepp, _check_polygon, \
 processing_workflow_setup_gen
 
 from tests.test_utils import get_data_path, ROOT_DIR, DATA_DIR
@@ -135,9 +135,9 @@ class JobsTestCase(unittest.TestCase):
         self.context.config['GardnerKnopoff']['foreshock_time_window'] = 0.5
 
         read_eq_catalog(self.context)
+        create_numpy_matrix(self.context)
 
-        expected_vmain_shock = _create_numpy_matrix(self.context)
-        expected_vmain_shock = np.delete(expected_vmain_shock, [4, 10, 19], 0)
+        expected_vmain_shock = np.delete(self.context.catalog_matrix, [4, 10, 19], 0)
 
         expected_vcl = np.array([0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0,
             0, 0, 0, 0, 6])
@@ -147,6 +147,8 @@ class JobsTestCase(unittest.TestCase):
 
         gardner_knopoff(self.context)
 
+        self.assertTrue(np.array_equal(expected_vmain_shock,
+                self.context.catalog_matrix))
         self.assertTrue(np.array_equal(expected_vcl, self.context.vcl))
         self.assertTrue(np.array_equal(expected_flag_vector,
                 self.context.flag_vector))
@@ -160,6 +162,7 @@ class JobsTestCase(unittest.TestCase):
         self.context.config['GardnerKnopoff']['foreshock_time_window'] = 0.5
 
         read_eq_catalog(self.context)
+        create_numpy_matrix(self.context)
 
         def mock(data, time_dist_windows, foreshock_time_window):
             self.assertEquals("GardnerKnopoff", time_dist_windows)
@@ -178,6 +181,7 @@ class JobsTestCase(unittest.TestCase):
         self.context.config['Stepp']['increment_lock'] = True
 
         read_eq_catalog(self.context)
+        create_numpy_matrix(self.context)
 
         filtered_eq_events = np.array([
                     [4.0, 1994.], [4.1, 1994.], [4.2, 1994.],
@@ -212,6 +216,7 @@ class JobsTestCase(unittest.TestCase):
         self.context.config['Stepp']['increment_lock'] = True
 
         read_eq_catalog(self.context)
+        create_numpy_matrix(self.context)
 
         def mock(year, mw, magnitude_windows, time_window, sensitivity, iloc):
             self.assertEqual(time_window, 5)

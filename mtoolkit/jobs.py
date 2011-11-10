@@ -56,36 +56,27 @@ def read_source_model(context):
     context.sm_definitions = sm_definitions
 
 
-def _create_numpy_matrix(context):
+def create_numpy_matrix(context):
     """Create a numpy matrix according to fixed attributes"""
 
     matrix = []
     attributes = ['year', 'month', 'day', 'longitude', 'latitude', 'Mw']
     for eq_entry in context.eq_catalog:
         matrix.append([eq_entry[attribute] for attribute in attributes])
-    return np.array(matrix)
+    context.catalog_matrix = np.array(matrix)
 
 
 def gardner_knopoff(context, alg=gardner_knopoff_decluster):
     """Apply gardner_knopoff declustering algorithm to the eq catalog"""
 
     vcl, vmain_shock, flag_vector = alg(
-            _create_numpy_matrix(context),
+            context.catalog_matrix,
             context.config['GardnerKnopoff']['time_dist_windows'],
             context.config['GardnerKnopoff']['foreshock_time_window'])
 
     context.vcl = vcl
-    context.vmain_shock = vmain_shock
+    context.catalog_matrix = vmain_shock
     context.flag_vector = flag_vector
-
-
-def a_declustering_was_executed(context):
-    """
-    Return True if a declustering
-    algorithm has been executed in
-    the pipeline
-    """
-    return hasattr(context, 'vmain_shock')
 
 
 def stepp(context, alg=stepp_analysis):
@@ -98,23 +89,13 @@ def stepp(context, alg=stepp_analysis):
     year_index = 0
     mw_index = 5
 
-    if a_declustering_was_executed(context):
-        context.completeness_table = alg(
-            context.vmain_shock[:, year_index],
-            context.vmain_shock[:, mw_index],
-            context.config['Stepp']['magnitude_windows'],
-            context.config['Stepp']['time_window'],
-            context.config['Stepp']['sensitivity'],
-            context.config['Stepp']['increment_lock'])
-    else:
-        context.numpy_matrix = _create_numpy_matrix(context)
-        context.completeness_table = alg(
-            context.numpy_matrix[:, year_index],
-            context.numpy_matrix[:, mw_index],
-            context.config['Stepp']['magnitude_windows'],
-            context.config['Stepp']['time_window'],
-            context.config['Stepp']['sensitivity'],
-            context.config['Stepp']['increment_lock'])
+    context.completeness_table = alg(
+        context.catalog_matrix[:, year_index],
+        context.catalog_matrix[:, mw_index],
+        context.config['Stepp']['magnitude_windows'],
+        context.config['Stepp']['time_window'],
+        context.config['Stepp']['sensitivity'],
+        context.config['Stepp']['increment_lock'])
 
 
 def _processing_steps_required(context):

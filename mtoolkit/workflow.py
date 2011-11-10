@@ -25,7 +25,8 @@ order. The order is determined by the queue of jobs.
 
 import yaml
 
-from mtoolkit.jobs import read_eq_catalog, gardner_knopoff, stepp
+from mtoolkit.jobs import read_eq_catalog, gardner_knopoff, stepp, \
+create_numpy_matrix
 
 
 class PipeLine(object):
@@ -88,6 +89,7 @@ class PipeLineBuilder(object):
 
         pipeline = PipeLine(self.name)
         pipeline.add_job(read_eq_catalog)
+        pipeline.add_job(create_numpy_matrix)
         for step in config['preprocessing_steps']:
             pipeline.add_job(self.map_step_callable[step])
 
