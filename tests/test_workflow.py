@@ -109,3 +109,8 @@ class PipeLineBuilderTestCase(unittest.TestCase):
 
         self.assertEqual(expected_pipeline,
             self.pipeline_builder.build(self.context.config))
+
+    def test_non_existent_job_raise_exception(self):
+        self.context.config['preprocessing_steps'] = ['invalid_job']
+        self.assertRaises(RuntimeError, self.pipeline_builder.build,
+                self.context.config)

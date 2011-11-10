@@ -91,8 +91,10 @@ class PipeLineBuilder(object):
         pipeline.add_job(read_eq_catalog)
         pipeline.add_job(create_catalog_matrix)
         for step in config['preprocessing_steps']:
-            pipeline.add_job(self.map_step_callable[step])
-
+            try:
+                pipeline.add_job(self.map_step_callable[step])
+            except KeyError:
+                raise RuntimeError('Invalid step: %s' % step)
         return pipeline
 
 
