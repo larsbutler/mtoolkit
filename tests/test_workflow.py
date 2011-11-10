@@ -20,7 +20,8 @@
 import unittest
 
 from mtoolkit.workflow import PipeLine, PipeLineBuilder, Context
-from mtoolkit.jobs import read_eq_catalog, create_catalog_matrix, gardner_knopoff
+from mtoolkit.jobs import read_eq_catalog, create_catalog_matrix, \
+gardner_knopoff
 
 from tests.test_utils import get_data_path, ROOT_DIR
 
