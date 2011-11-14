@@ -22,7 +22,7 @@ from mtoolkit.workflow import Context, PipeLineBuilder
 
 
 if __name__ == '__main__':
-    INPUT_CONFIG_FILENAME = cmd_line()
+    INPUT_CONFIG_FILENAME, LOG = cmd_line()
     if INPUT_CONFIG_FILENAME != None:
         CONTEXT = Context(INPUT_CONFIG_FILENAME)
         PIPELINE = PipeLineBuilder("test pipeline").build(
@@ -30,5 +30,5 @@ if __name__ == '__main__':
         PIPELINE.run(CONTEXT)
 
         print CONTEXT.vcl
-        print CONTEXT.vmain_shock
+        print CONTEXT.catalog_matrix
         print CONTEXT.flag_vector

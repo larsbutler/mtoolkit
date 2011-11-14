@@ -25,6 +25,15 @@ import sys
 import argparse
 
 
+class LogAction(argparse.Action):
+    """
+    Custom action defined for the log cmdline option
+    which receives no args
+    """
+    def __call__(self, parser, namespace, values, option_string=None):
+        namespace.log = True
+
+
 def build_cmd_parser():
     """
     Create a simple parser for cmdline
@@ -37,6 +46,13 @@ def build_cmd_parser():
                         metavar='input file',
                         help="""Specify the configuration
                         file (i.e. config.yml)""")
+
+    parser.add_argument('-l', '--log',
+                        metavar='',
+                        action=LogAction,
+                        nargs=0,
+                        help="-l, --log: activate logging info")
+
     parser.add_argument('-v', '--version',
                         action='version',
                         version="%(prog)s 0.0.1")
@@ -62,4 +78,4 @@ def cmd_line():
             print 'Error: non existent input file\n'
             parser.print_help()
 
-    return input_filename
+    return input_filename, args.log
