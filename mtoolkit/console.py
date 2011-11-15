@@ -23,6 +23,7 @@ A set of utility functions for cmdline
 import os
 import sys
 import argparse
+import logging
 
 
 def build_cmd_parser():
@@ -37,6 +38,7 @@ def build_cmd_parser():
                         metavar='input file',
                         help="""Specify the configuration
                         file (i.e. config.yml)""")
+
     parser.add_argument('-v', '--version',
                         action='version',
                         version="%(prog)s 0.0.1")
@@ -63,3 +65,28 @@ def cmd_line():
             parser.print_help()
 
     return input_filename
+
+
+def build_logger():
+    """
+    Build a custom logger which provides
+    log data to the cmdline and in a log_file
+    """
+
+    logger = logging.getLogger('mt_logger')
+    logger.setLevel(logging.DEBUG)
+
+    console_handler = logging.StreamHandler()
+    logfile_handler = logging.FileHandler('log_file.log')
+
+    console_handler.setLevel(logging.INFO)
+    logfile_handler.setLevel(logging.DEBUG)
+
+    formatter = logging.Formatter(
+        '%(levelname)s - %(message)s - %(asctime)s')
+
+    console_handler.setFormatter(formatter)
+    logfile_handler.setFormatter(formatter)
+
+    logger.addHandler(console_handler)
+    logger.addHandler(logfile_handler)

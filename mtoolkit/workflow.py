@@ -28,6 +28,9 @@ import yaml
 from mtoolkit.jobs import read_eq_catalog, gardner_knopoff, stepp, \
 create_catalog_matrix
 
+from mtoolkit.declustering import gardner_knopoff_decluster
+from mtoolkit.completeness import stepp_analysis
+
 
 class PipeLine(object):
     """
@@ -46,13 +49,13 @@ class PipeLine(object):
         self.jobs = []
 
     def __eq__(self, other):
-        return self.name == other.name\
+        return self.name == other.name \
                 and self.jobs == other.jobs
 
-    def add_job(self, a_callable):
+    def add_job(self, a_job):
         """Append a new job the to queue"""
 
-        self.jobs.append(a_callable)
+        self.jobs.append(a_job)
 
     def run(self, context):
         """
@@ -60,6 +63,9 @@ class PipeLine(object):
         where each job take input data
         and write the results
         of calculation in context.
+        If logging is triggered by cmdline
+        each job is decorated by adding
+        logging statements.
         """
 
         for job in self.jobs:
@@ -108,3 +114,5 @@ class Context(object):
     def __init__(self, config_filename):
         config_file = open(config_filename, 'r')
         self.config = yaml.load(config_file)
+        self.map_sc = {'gardner_knopoff': gardner_knopoff_decluster,
+                        'stepp': stepp_analysis}

@@ -23,6 +23,7 @@ from mtoolkit.workflow import PipeLine, PipeLineBuilder, Context
 from mtoolkit.jobs import read_eq_catalog, create_catalog_matrix, \
 gardner_knopoff
 
+
 from tests.test_utils import get_data_path, ROOT_DIR
 
 
@@ -69,14 +70,6 @@ class PipeLineTestCase(unittest.TestCase):
 
         self.context = Context(get_data_path('config.yml', ROOT_DIR))
         self.context.number = 2
-
-    def test_add_job(self):
-        self.pipeline.add_job(self.square_job)
-        self.pipeline.add_job(self.double_job)
-
-        self.assertEqual(self.pipeline_name, self.pipeline.name)
-        self.assertEqual(self.square_job, self.pipeline.jobs[0])
-        self.assertEqual(self.double_job, self.pipeline.jobs[1])
 
     def test_run_jobs(self):
         self.pipeline.add_job(self.square_job)

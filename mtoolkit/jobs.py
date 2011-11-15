@@ -22,19 +22,37 @@ The purpose of this module is to provide functions
 which tackle specific job.
 """
 
+import logging
 import numpy as np
 from shapely.geometry import Polygon, Point
 
 from mtoolkit.eqcatalog     import EqEntryReader
 from mtoolkit.smodel        import NRMLReader
-from mtoolkit.declustering  import gardner_knopoff_decluster
-from mtoolkit.completeness  import stepp_analysis
 
 from tests.test_utils import get_data_path, SCHEMA_DIR
 
 NRML_SCHEMA_PATH = get_data_path('nrml.xsd', SCHEMA_DIR)
 
 
+def logged_job(job):
+    """
+    Decorate a job by adding logging
+    statements before and after the execution
+    of the job
+    """
+
+    def wrapper(context):
+        """Wraps a job, adding logging statements"""
+        logger = logging.getLogger('mt_logger')
+        start_job_line = 'Start:\t%s \t' % job.__name__
+        end_job_line = 'End:\t%s \t' % job.__name__
+        logger.info(start_job_line)
+        job(context)
+        logger.info(end_job_line)
+    return wrapper
+
+
+@logged_job
 def read_eq_catalog(context):
     """Create eq entries by reading an eq catalog"""
 
@@ -45,6 +63,7 @@ def read_eq_catalog(context):
     context.eq_catalog = eq_entries
 
 
+@logged_job
 def read_source_model(context):
     """Create smodel definitions by reading a source model"""
 
@@ -56,6 +75,7 @@ def read_source_model(context):
     context.sm_definitions = sm_definitions
 
 
+@logged_job
 def create_catalog_matrix(context):
     """Create a numpy matrix according to fixed attributes"""
 
@@ -66,10 +86,11 @@ def create_catalog_matrix(context):
     context.catalog_matrix = np.array(matrix)
 
 
-def gardner_knopoff(context, alg=gardner_knopoff_decluster):
+@logged_job
+def gardner_knopoff(context):
     """Apply gardner_knopoff declustering algorithm to the eq catalog"""
 
-    vcl, vmain_shock, flag_vector = alg(
+    vcl, vmain_shock, flag_vector = context.map_sc['gardner_knopoff'](
             context.catalog_matrix,
             context.config['GardnerKnopoff']['time_dist_windows'],
             context.config['GardnerKnopoff']['foreshock_time_window'])
@@ -79,7 +100,8 @@ def gardner_knopoff(context, alg=gardner_knopoff_decluster):
     context.flag_vector = flag_vector
 
 
-def stepp(context, alg=stepp_analysis):
+@logged_job
+def stepp(context):
     """
     Apply step algorithm to the eq catalog
     or to the numpy array built by a
@@ -89,7 +111,7 @@ def stepp(context, alg=stepp_analysis):
     year_index = 0
     mw_index = 5
 
-    context.completeness_table = alg(
+    context.completeness_table = context.map_sc['stepp'](
         context.catalog_matrix[:, year_index],
         context.catalog_matrix[:, mw_index],
         context.config['Stepp']['magnitude_windows'],

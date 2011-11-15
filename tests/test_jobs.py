@@ -170,7 +170,8 @@ class JobsTestCase(unittest.TestCase):
             self.assertEquals(0.5, foreshock_time_window)
             return None, None, None
 
-        gardner_knopoff(self.context, alg=mock)
+        self.context.map_sc['gardner_knopoff'] = mock
+        gardner_knopoff(self.context)
 
     def test_stepp(self):
         self.context.config['eq_catalog_file'] = get_data_path(
@@ -225,4 +226,5 @@ class JobsTestCase(unittest.TestCase):
             self.assertEqual(sensitivity, 0.2)
             self.assertTrue(iloc)
 
-        stepp(self.context, alg=mock)
+        self.context.map_sc['stepp'] = mock
+        stepp(self.context)
