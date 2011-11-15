@@ -23,6 +23,7 @@ A set of utility functions for cmdline
 import os
 import sys
 import argparse
+import logging
 
 
 class LogAction(argparse.Action):
@@ -74,8 +75,32 @@ def cmd_line():
         args = parser.parse_args()
         if os.path.exists(args.input_file[0]):
             input_filename = args.input_file[0]
+            if args.log is None:
+                args.log = False
         else:
             print 'Error: non existent input file\n'
             parser.print_help()
 
     return input_filename, args.log
+
+
+def build_logger():
+    """
+    Build a custom logger which provides
+    log data to the cmdline and in a log_file
+    """
+
+    logger = logging.getLogger('mt_logger')
+    logger.setLevel(logging.INFO)
+
+    console_handler = logging.StreamHandler()
+    logfile_handler = logging.FileHandler('log_file.log')
+
+    formatter = logging.Formatter(
+        '%(levelname)s - %(message)s - %(asctime)s')
+
+    console_handler.setFormatter(formatter)
+    logfile_handler.setFormatter(formatter)
+
+    logger.addHandler(console_handler)
+    logger.addHandler(logfile_handler)

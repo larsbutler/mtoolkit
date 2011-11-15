@@ -24,9 +24,31 @@ order. The order is determined by the queue of jobs.
 """
 
 import yaml
+import logging
+from itertools import imap
 
 from mtoolkit.jobs import read_eq_catalog, gardner_knopoff, stepp, \
 create_catalog_matrix
+
+
+def logged_job(job):
+    """
+    Decorate a job by adding logging
+    statements before and after the execution
+    of the job
+    """
+
+    def wrapper(context):
+        """Wraps a job, adding logging statements"""
+        logger = logging.getLogger('mt_logger')
+        start_job_line = 'Start:\t%s \t' % job.__name__
+        end_job_line = 'End:\t%s \t' % job.__name__
+        logger.debug(start_job_line)
+        logger.info(start_job_line)
+        job(context)
+        logger.debug(end_job_line)
+        logger.info(end_job_line)
+    return wrapper
 
 
 class PipeLine(object):
@@ -54,14 +76,19 @@ class PipeLine(object):
 
         self.jobs.append(a_callable)
 
-    def run(self, context):
+    def run(self, context, log):
         """
         Run all the jobs in queue,
         where each job take input data
         and write the results
         of calculation in context.
+        If logging is triggered by cmdline
+        each job is decorated by adding
+        logging statements.
         """
 
+        if log:
+            self.jobs = imap(logged_job, self.jobs)
         for job in self.jobs:
             job(context)
 

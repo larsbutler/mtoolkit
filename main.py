@@ -17,7 +17,7 @@
 # <http://www.gnu.org/licenses/lgpl-3.0.txt> for a copy of the LGPLv3 License.
 
 
-from mtoolkit.console import cmd_line
+from mtoolkit.console import cmd_line, build_logger
 from mtoolkit.workflow import Context, PipeLineBuilder
 
 
@@ -25,9 +25,11 @@ if __name__ == '__main__':
     INPUT_CONFIG_FILENAME, LOG = cmd_line()
     if INPUT_CONFIG_FILENAME != None:
         CONTEXT = Context(INPUT_CONFIG_FILENAME)
+        if LOG:
+            build_logger()
         PIPELINE = PipeLineBuilder("test pipeline").build(
                 CONTEXT.config)
-        PIPELINE.run(CONTEXT)
+        PIPELINE.run(CONTEXT, log=LOG)
 
         print CONTEXT.vcl
         print CONTEXT.catalog_matrix

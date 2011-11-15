@@ -81,7 +81,8 @@ class PipeLineTestCase(unittest.TestCase):
     def test_run_jobs(self):
         self.pipeline.add_job(self.square_job)
         self.pipeline.add_job(self.double_job)
-        self.pipeline.run(self.context)
+        log = False
+        self.pipeline.run(self.context, log)
 
         self.assertEqual(8, self.context.number)
 
@@ -89,7 +90,7 @@ class PipeLineTestCase(unittest.TestCase):
         self.pipeline.jobs.reverse()
         # Reset context to a base value
         self.context.number = 2
-        self.pipeline.run(self.context)
+        self.pipeline.run(self.context, log)
 
         self.assertEqual(16, self.context.number)
 
