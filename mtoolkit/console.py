@@ -26,15 +26,6 @@ import argparse
 import logging
 
 
-class LogAction(argparse.Action):
-    """
-    Custom action defined for the log cmdline option
-    which receives no args
-    """
-    def __call__(self, parser, namespace, values, option_string=None):
-        namespace.log = True
-
-
 def build_cmd_parser():
     """
     Create a simple parser for cmdline
@@ -47,12 +38,6 @@ def build_cmd_parser():
                         metavar='input file',
                         help="""Specify the configuration
                         file (i.e. config.yml)""")
-
-    parser.add_argument('-l', '--log',
-                        metavar='',
-                        action=LogAction,
-                        nargs=0,
-                        help="-l, --log: activate logging info")
 
     parser.add_argument('-v', '--version',
                         action='version',
@@ -75,13 +60,11 @@ def cmd_line():
         args = parser.parse_args()
         if os.path.exists(args.input_file[0]):
             input_filename = args.input_file[0]
-            if args.log is None:
-                args.log = False
         else:
             print 'Error: non existent input file\n'
             parser.print_help()
 
-    return input_filename, args.log
+    return input_filename
 
 
 def build_logger():
@@ -91,10 +74,13 @@ def build_logger():
     """
 
     logger = logging.getLogger('mt_logger')
-    logger.setLevel(logging.INFO)
+    logger.setLevel(logging.DEBUG)
 
     console_handler = logging.StreamHandler()
     logfile_handler = logging.FileHandler('log_file.log')
+
+    console_handler.setLevel(logging.INFO)
+    logfile_handler.setLevel(logging.DEBUG)
 
     formatter = logging.Formatter(
         '%(levelname)s - %(message)s - %(asctime)s')

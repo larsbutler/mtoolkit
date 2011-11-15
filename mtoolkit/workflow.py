@@ -24,31 +24,12 @@ order. The order is determined by the queue of jobs.
 """
 
 import yaml
-import logging
-from itertools import imap
 
 from mtoolkit.jobs import read_eq_catalog, gardner_knopoff, stepp, \
 create_catalog_matrix
 
-
-def logged_job(job):
-    """
-    Decorate a job by adding logging
-    statements before and after the execution
-    of the job
-    """
-
-    def wrapper(context):
-        """Wraps a job, adding logging statements"""
-        logger = logging.getLogger('mt_logger')
-        start_job_line = 'Start:\t%s \t' % job.__name__
-        end_job_line = 'End:\t%s \t' % job.__name__
-        logger.debug(start_job_line)
-        logger.info(start_job_line)
-        job(context)
-        logger.debug(end_job_line)
-        logger.info(end_job_line)
-    return wrapper
+from mtoolkit.declustering import gardner_knopoff_decluster
+from mtoolkit.completeness import stepp_analysis
 
 
 class PipeLine(object):
@@ -68,15 +49,15 @@ class PipeLine(object):
         self.jobs = []
 
     def __eq__(self, other):
-        return self.name == other.name\
+        return self.name == other.name \
                 and self.jobs == other.jobs
 
-    def add_job(self, a_callable):
+    def add_job(self, a_job):
         """Append a new job the to queue"""
 
-        self.jobs.append(a_callable)
+        self.jobs.append(a_job)
 
-    def run(self, context, log):
+    def run(self, context):
         """
         Run all the jobs in queue,
         where each job take input data
@@ -87,8 +68,6 @@ class PipeLine(object):
         logging statements.
         """
 
-        if log:
-            self.jobs = imap(logged_job, self.jobs)
         for job in self.jobs:
             job(context)
 
@@ -133,3 +112,5 @@ class Context(object):
     def __init__(self, config_filename):
         config_file = open(config_filename, 'r')
         self.config = yaml.load(config_file)
+        self.map_sc = {'gardner_knopoff': gardner_knopoff_decluster,
+                        'stepp': stepp_analysis}
