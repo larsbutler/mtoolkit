@@ -24,13 +24,13 @@ from mtoolkit.jobs import read_eq_catalog, create_catalog_matrix, \
 gardner_knopoff
 
 
-from tests.test_utils import get_data_path, ROOT_DIR
+from tests.test_utils import get_data_path, DATA_DIR
 
 
 class ContextTestCase(unittest.TestCase):
 
     def setUp(self):
-        self.context = Context(get_data_path('config.yml', ROOT_DIR))
+        self.context = Context(get_data_path('config.yml', DATA_DIR))
 
     def test_load_config_file(self):
         expected_config_dict = {
@@ -68,7 +68,7 @@ class PipeLineTestCase(unittest.TestCase):
         self.pipeline_name = 'square pipeline'
         self.pipeline = PipeLine(self.pipeline_name)
 
-        self.context = Context(get_data_path('config.yml', ROOT_DIR))
+        self.context = Context(get_data_path('config.yml', DATA_DIR))
         self.context.number = 2
 
     def test_run_jobs(self):
@@ -92,7 +92,7 @@ class PipeLineBuilderTestCase(unittest.TestCase):
     def setUp(self):
         self.pipeline_name = 'main workflow'
         self.pipeline_builder = PipeLineBuilder(self.pipeline_name)
-        self.context = Context(get_data_path('config.yml', ROOT_DIR))
+        self.context = Context(get_data_path('config.yml', DATA_DIR))
 
     def test_build_pipeline(self):
         expected_pipeline = PipeLine(self.pipeline_name)
