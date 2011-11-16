@@ -35,6 +35,20 @@ apply_processing_steps: #yes/no
 # order.
 preprocessing_steps:
 - GardnerKnopoff
+- Stepp
+
+
+# =========================================================
+# List of processing steps
+# =========================================================
+
+
+# Choose one algorithm per preprocessing step,
+# algorithms will be executed in the specified
+# order.
+processing_steps:
+- Recurrence
+
 
 # =========================================================
 # Preprocessing steps in detail
@@ -66,4 +80,41 @@ Stepp: {
   # Increment Lock (fixes that the completeness magnitude
   # will always increase further back in time)
   increment_lock: True 
-}  
+} 
+
+
+# =========================================================
+# Processing steps in detail
+# =========================================================
+
+# Recurrence Step
+
+Recurrence: {
+    
+    # Width of magnitude window positive float
+    magnitude_window: 0.2
+    
+    # Choose one among Wiechart or MLE
+    recurrence_algorithm: Wiechart
+
+    Wiechart: {
+        
+        # A float
+        reference_magnitude: 1.0,
+
+        # Greater than zero (flaot)
+        magnitude_window: 0.3,
+        
+        # Greater than zero (float)
+        time_window: 0.2,
+    },
+
+    MLE: {
+        
+        # A float
+        reference_magnitude: 1.1,
+
+        # Greater than zero (flaot)
+        magnitude_window: 0.1,
+    }
+}
