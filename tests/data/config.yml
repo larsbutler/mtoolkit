@@ -1,0 +1,69 @@
+# *********************************************************
+# MT Workflow configuration file 
+# *********************************************************
+
+# =========================================================
+# Input/Output files
+# =========================================================
+
+# Path to the file defining the eq catalog.
+eq_catalog_file: tests/data/ISC_correct.csv 
+
+# Path to the file defining the transformed 
+# eq catalog after the preprocessing steps.
+# If not defined no file will be written.
+pprocessing_result_file: path_to_file
+
+# Path to the file defining the source model.
+source_model_file: path_to_file
+
+# Path to the file defining the results 
+# of computation.
+result_file: path_to_file
+
+# Boolean flag to declare
+# if processing steps are needed.
+apply_processing_steps: #yes/no
+
+# =========================================================
+# List of preprocessing steps
+# =========================================================
+
+
+# Choose one algorithm per preprocessing step,
+# algorithms will be executed in the specified
+# order.
+preprocessing_steps:
+- GardnerKnopoff
+
+# =========================================================
+# Preprocessing steps in detail
+# =========================================================
+
+# Declustering Steps
+
+GardnerKnopoff: {
+  # Possible values: GardnerKnopoff, Uhrhammer, Gruenthal.
+  time_dist_windows: no,
+
+  # float >= 0 proportion of aftershock time windows 
+  # to use to search for foreshock.
+  foreshock_time_window: 0
+}
+
+# Completeness Steps
+
+Stepp: {
+  # Time Window of each step (in years)
+  time_window: 5,
+
+  # Magnitude window of each step (in Mw units)
+  magnitude_windows: 0.2,
+  
+  # Sensitivity parameter (see documentation)
+  sensitivity: 0.1,
+  
+  # Increment Lock (fixes that the completeness magnitude
+  # will always increase further back in time)
+  increment_lock: True 
+}  
