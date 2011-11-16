@@ -92,10 +92,10 @@ Stepp: {
 Recurrence: {
     
     # Width of magnitude window positive float
-    magnitude_window: 0.2
+    magnitude_window: 0.2,
     
     # Choose one among Wiechart or MLE
-    recurrence_algorithm: Wiechart
+    recurrence_algorithm: Wiechart,
 
     Wiechart: {
         
