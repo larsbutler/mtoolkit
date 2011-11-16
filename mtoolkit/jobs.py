@@ -43,8 +43,8 @@ def logged_job(job):
     def wrapper(context):
         """Wraps a job, adding logging statements"""
         logger = logging.getLogger('mt_logger')
-        start_job_line = 'Start:\t%s \t' % job.__name__
-        end_job_line = 'End:\t%s \t' % job.__name__
+        start_job_line = 'Start:\t%21s \t' % job.__name__
+        end_job_line = 'End:\t%21s \t' % job.__name__
         logger.info(start_job_line)
         job(context)
         logger.info(end_job_line)
