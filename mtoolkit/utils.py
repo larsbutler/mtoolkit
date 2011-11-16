@@ -33,7 +33,8 @@ ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 SCHEMA_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__),
         '../nrml/schema'))
 
-DATA_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '../tests/data'))
+DATA_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__),
+        '../tests/data'))
 
 FILE_NAME_ERROR = "Unknown filename"
 
