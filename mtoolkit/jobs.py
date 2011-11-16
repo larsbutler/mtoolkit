@@ -28,8 +28,7 @@ from shapely.geometry import Polygon, Point
 
 from mtoolkit.eqcatalog     import EqEntryReader
 from mtoolkit.smodel        import NRMLReader
-
-from tests.test_utils import get_data_path, SCHEMA_DIR
+from mtoolkit.utils import get_data_path, SCHEMA_DIR
 
 NRML_SCHEMA_PATH = get_data_path('nrml.xsd', SCHEMA_DIR)
 

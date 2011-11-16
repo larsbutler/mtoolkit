@@ -21,8 +21,7 @@ import unittest
 
 from mtoolkit.eqcatalog import CsvReader, EqEntryReader, \
 EqEntryValidationError
-
-from tests.test_utils import get_data_path, DATA_DIR, FILE_NAME_ERROR
+from mtoolkit.utils import get_data_path, DATA_DIR, FILE_NAME_ERROR
 
 FIELDNAMES = ['eventID', 'Agency', 'Identifier',
               'year', 'month', 'day',

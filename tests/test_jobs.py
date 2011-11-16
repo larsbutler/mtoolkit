@@ -26,8 +26,7 @@ from mtoolkit.workflow import Context
 from mtoolkit.jobs import read_eq_catalog, read_source_model, \
 create_catalog_matrix, gardner_knopoff, stepp, _check_polygon, \
 processing_workflow_setup_gen
-
-from tests.test_utils import get_data_path, DATA_DIR
+from mtoolkit.utils import get_data_path, DATA_DIR
 
 
 class JobsTestCase(unittest.TestCase):
