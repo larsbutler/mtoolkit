@@ -20,10 +20,26 @@
 """
 The purpose of this module is to provide constants,
 and some utilities: function and exception to deal
-with nrml (xml file format).
+with nrml (xml file format) and the retrieval of
+nrml schema path.
 """
 
+import os
 from lxml import etree
+
+
+ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+
+SCHEMA_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__),
+        '../nrml/schema'))
+
+DATA_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__),
+        '../tests/data'))
+
+FILE_NAME_ERROR = "Unknown filename"
+
+SCHEMA_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__),
+        '../nrml/schema'))
 
 NRML_NS = 'http://openquake.org/xmlns/nrml/0.2'
 GML_NS = 'http://www.opengis.net/gml'
@@ -81,7 +97,7 @@ SIMPLE_POINT_SOURCE = "%spointSource" % NRML
 LOCATION = "%slocation" % NRML
 POINT = "%sPoint" % GML
 SRS_NAME = "srsName"
-POS = "%spos" % GML 
+POS = "%spos" % GML
 
 
 class XMLValidationError(Exception):
@@ -100,3 +116,8 @@ def valid_schema(source_model_path, schema_path):
     xml_doc = etree.parse(source_model_path)
     xmlschema = etree.XMLSchema(etree.parse(schema_path))
     return xmlschema.validate(xml_doc)
+
+
+def get_data_path(filename, dirname):
+    """Return the data path of files used in test."""
+    return os.path.join(dirname, filename)

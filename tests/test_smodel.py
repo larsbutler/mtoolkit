@@ -21,8 +21,7 @@ import unittest
 
 from mtoolkit import xml_utils
 from mtoolkit.smodel import NRMLReader
-
-from tests.test_utils import get_data_path, DATA_DIR, \
+from mtoolkit.utils import get_data_path, DATA_DIR, \
     SCHEMA_DIR, FILE_NAME_ERROR
 
 

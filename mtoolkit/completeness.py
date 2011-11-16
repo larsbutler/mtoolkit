@@ -101,7 +101,8 @@ def stepp_analysis(year, mw, dm=0.1, dt=1, ttol=0.2, iloc=True):
                 tloc[ii] = tloc[ii - 1]
             else:
                 # Print warning
-                print "Fitting tolerance removed all data - change parameter"
+                #print "Fitting tolerance removed all data - change parameter"
+                pass
         else:
             tloc[ii] = tloct
         if tloct > np.max(np.shape(T)):

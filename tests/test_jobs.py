@@ -26,15 +26,14 @@ from mtoolkit.workflow import Context
 from mtoolkit.jobs import read_eq_catalog, read_source_model, \
 create_catalog_matrix, gardner_knopoff, stepp, _check_polygon, \
 processing_workflow_setup_gen
-
-from tests.test_utils import get_data_path, ROOT_DIR, DATA_DIR
+from mtoolkit.utils import get_data_path, DATA_DIR
 
 
 class JobsTestCase(unittest.TestCase):
 
     def setUp(self):
         self.context = Context(get_data_path(
-            'config.yml', ROOT_DIR))
+            'config.yml', DATA_DIR))
         self.eq_catalog_filename = get_data_path(
             'ISC_small_data.csv', DATA_DIR)
         self.smodel_filename = get_data_path(

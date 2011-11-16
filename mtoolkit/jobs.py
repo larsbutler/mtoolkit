@@ -28,8 +28,7 @@ from shapely.geometry import Polygon, Point
 
 from mtoolkit.eqcatalog     import EqEntryReader
 from mtoolkit.smodel        import NRMLReader
-
-from tests.test_utils import get_data_path, SCHEMA_DIR
+from mtoolkit.utils import get_data_path, SCHEMA_DIR
 
 NRML_SCHEMA_PATH = get_data_path('nrml.xsd', SCHEMA_DIR)
 
@@ -44,8 +43,8 @@ def logged_job(job):
     def wrapper(context):
         """Wraps a job, adding logging statements"""
         logger = logging.getLogger('mt_logger')
-        start_job_line = 'Start:\t%s \t' % job.__name__
-        end_job_line = 'End:\t%s \t' % job.__name__
+        start_job_line = 'Start:\t%21s \t' % job.__name__
+        end_job_line = 'End:\t%21s \t' % job.__name__
         logger.info(start_job_line)
         job(context)
         logger.info(end_job_line)
