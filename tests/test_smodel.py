@@ -19,7 +19,7 @@
 
 import unittest
 
-from mtoolkit import xml_utils
+from mtoolkit import utils
 from mtoolkit.smodel import NRMLReader
 from mtoolkit.utils import get_data_path, DATA_DIR, \
     SCHEMA_DIR, FILE_NAME_ERROR
@@ -59,7 +59,7 @@ class NRMLReaderTestCase(unittest.TestCase):
                             self.schema)
 
     def test_incorrect_sm_document_raise_exception(self):
-        self.assertRaises(xml_utils.XMLValidationError, NRMLReader,
+        self.assertRaises(utils.XMLValidationError, NRMLReader,
             self.incorrect_nrml, self.schema)
 
     def test_number_as_entries_equals_number_gen_entries(self):
